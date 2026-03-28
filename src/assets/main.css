@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100dvh;
+  }
+  /* Evita el bounce scroll nativo en iOS/Android webview */
+  html, body {
+    overscroll-behavior: none;
+  }
+
+  /* ── Dark mode: override de colores del design system ── */
+  .dark body,
+  .dark {
+    --bg-background:      #111d23;
+    --text-on-background: #e6f3fb;
+  }
+  .dark body {
+    background-color: #111d23;
+    color: #e6f3fb;
+  }
+  /* Override colores semánticos en dark */
+  .dark .bg-background       { background-color: #111d23 !important; }
+  .dark .bg-surface           { background-color: #111d23 !important; }
+  .dark .text-on-background  { color: #e6f3fb !important; }
+  .dark .text-on-surface     { color: #e6f3fb !important; }
+  .dark .text-primary        { color: #a1ced6 !important; }
+  .dark .bg-primary          { background-color: #a1ced6 !important; color: #001f24 !important; }
+  .dark .text-on-surface-variant { color: #c0c8c9 !important; }
+  .dark .text-secondary      { color: #afcbd8 !important; }
+  .dark .text-outline        { color: #8a9294 !important; }
+  .dark .bg-surface-container-lowest  { background-color: #0a1418 !important; }
+  .dark .bg-surface-container-low     { background-color: #131f25 !important; }
+  .dark .bg-surface-container         { background-color: #1a2a32 !important; }
+  .dark .bg-surface-container-high    { background-color: #213139 !important; }
+  .dark .bg-surface-container-highest { background-color: #2a3a42 !important; }
+  .dark .bg-primary-container         { background-color: #1f4d54 !important; }
+  .dark .bg-tertiary-fixed            { background-color: #2c4d41 !important; }
+  .dark .bg-secondary-container       { background-color: #304a55 !important; }
+  .dark .bg-error-container           { background-color: #93000a !important; color: #ffdad6 !important; }
+  .dark .text-tertiary                { color: #aacebf !important; }
+  .dark .text-error                   { color: #ffb4ab !important; }
+  .dark .border-outline-variant       { border-color: #404849 !important; }
+  /* Glass en dark — clase custom en lugar de override arbitrario */
+  .dark .bg-glass-light { background-color: rgba(17, 29, 35, 0.8) !important; }
+}
+
+/* Transición slide para elementos que aparecen/desaparecen */
+.slide-enter-active, .slide-leave-active {
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+.slide-enter-from, .slide-leave-to {
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.slide-enter-to, .slide-leave-from {
+  opacity: 1;
+  max-height: 60px;
+}
+
+@layer utilities {
+  .bg-glass {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  /* Safe area para notch/bottom bar en móviles */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 1rem);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+}

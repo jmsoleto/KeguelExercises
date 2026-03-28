@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Mobile / Capacitor
+android/
+ios/
+
+# Test results
+test-results/
+playwright-report/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# Claude internal
+.claude/
+CLAUDE.md
+
+# Logs
+*.log
+npm-debug.log*
