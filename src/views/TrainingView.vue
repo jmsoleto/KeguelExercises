@@ -5,7 +5,7 @@
          ESTADO 1: DASHBOARD "TODAY"
     ════════════════════════════════════════ -->
     <Transition name="slide-up">
-      <div v-if="!sessionStarted" class="pb-32">
+      <div v-if="!sessionStarted" class="pb-12">
 
         <!-- TopAppBar -->
         <header class="fixed top-0 w-full z-50 bg-[#f4faff]/80 dark:bg-[#111d23]/80 bg-glass-light bg-glass">
@@ -171,41 +171,19 @@
     <Transition name="slide-up">
       <div v-if="sessionStarted" class="h-dvh flex flex-col bg-surface overflow-hidden">
 
-        <!-- TopBar -->
-        <header class="fixed top-0 w-full z-50 bg-[#f4faff]/80 dark:bg-[#111d23]/80 bg-glass-light bg-glass flex items-center justify-between px-6 h-16">
-          <div class="flex items-center gap-4">
-            <button
-              @click="confirmStop"
-              class="text-primary hover:bg-surface-container-low transition-colors active:scale-95 rounded-full p-2"
-            >
-              <span class="material-symbols-outlined">close</span>
-            </button>
-            <h1 class="text-primary font-headline font-extrabold tracking-tighter text-xl">PelvicForce</h1>
-          </div>
-          <div class="flex items-center gap-3">
-            <div class="bg-surface-container-high px-3 py-1 rounded-full flex items-center gap-2">
-              <span class="material-symbols-outlined text-sm text-primary">timer</span>
-              <span class="text-xs font-bold font-label tracking-wider text-primary">{{ elapsedFormatted }}</span>
-            </div>
-          </div>
-        </header>
+        <main class="relative flex flex-col items-center justify-center px-6 pt-6 pb-24 h-full overflow-hidden">
 
-        <main class="relative flex flex-col items-center justify-center px-6 pt-16 pb-24 h-full overflow-hidden">
-
-          <!-- Barra de progreso total -->
-          <div class="w-full max-w-md absolute top-20 px-8 z-10">
-            <div class="flex justify-between items-end mb-2">
-              <span class="text-on-surface-variant font-label text-[10px] uppercase tracking-[0.2em] font-bold">{{ $t('training.session') }}</span>
-              <span class="text-primary font-headline font-bold text-sm">{{ Math.round(session.progress * 100) }}%</span>
-            </div>
-            <div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
-              <div
-                class="h-full rounded-full transition-all duration-1000"
-                :class="auraColor.progress"
-                :style="{ width: `${Math.round(session.progress * 100)}%` }"
-              />
-            </div>
-          </div>
+          <!-- Botón privacidad (esquina superior derecha) -->
+          <button
+            @click="privacyMode = !privacyMode"
+            :aria-label="privacyMode ? 'Desactivar modo discreto' : 'Activar modo discreto'"
+            class="absolute top-4 right-4 z-20 flex items-center justify-center w-10 h-10 rounded-full
+                   text-outline-variant/40 hover:text-primary transition-colors"
+          >
+            <span class="material-symbols-outlined text-lg" aria-hidden="true">
+              {{ privacyMode ? 'visibility' : 'visibility_off' }}
+            </span>
+          </button>
 
           <!-- ─── AURA CENTRAL ─── -->
           <div class="relative z-10 flex flex-col items-center justify-center w-full max-w-lg aspect-square">
@@ -213,39 +191,39 @@
 
               <!-- Aura exterior difuminada -->
               <div
-                class="absolute w-72 h-72 rounded-full blur-3xl animate-aura transition-colors duration-700"
+                class="absolute w-96 h-96 rounded-full blur-3xl animate-aura transition-colors duration-700"
                 :class="auraColor.blob"
               />
 
               <!-- Ripples -->
               <div
-                class="absolute w-64 h-64 rounded-full border-2 animate-ripple transition-colors duration-700"
+                class="absolute w-80 h-80 rounded-full border-2 animate-ripple transition-colors duration-700"
                 :class="auraColor.ripple"
               />
               <div
-                class="absolute w-64 h-64 rounded-full border-2 animate-ripple-delayed transition-colors duration-700"
+                class="absolute w-80 h-80 rounded-full border-2 animate-ripple-delayed transition-colors duration-700"
                 :class="auraColor.ripple"
               />
 
               <!-- Orbe central (cristal) — clip-path fuerza el círculo -->
               <div class="orb-circle transition-all duration-700">
                 <div class="orb-content">
-                  <p class="text-primary font-headline text-3xl font-extrabold tracking-tight mb-1" aria-live="polite">
+                  <p class="text-primary font-headline text-4xl font-extrabold tracking-tight mb-1" aria-live="polite">
                     {{ phaseLabel }}
                   </p>
                   <div class="flex items-center justify-center gap-2">
                     <span
-                      class="w-2 h-2 rounded-full animate-pulse transition-colors duration-700"
+                      class="w-2.5 h-2.5 rounded-full animate-pulse transition-colors duration-700"
                       :class="auraColor.dot"
                     />
-                    <p class="font-label text-xs font-bold tracking-widest uppercase"
+                    <p class="font-label text-sm font-bold tracking-widest uppercase"
                        :class="auraColor.subtext">
                       {{ phaseSubtext }}
                     </p>
                   </div>
-                  <div class="mt-3 flex flex-col items-center">
-                    <span class="text-[10px] font-bold text-primary/50 uppercase tracking-[0.3em] mb-1">{{ $t('training.seconds') }}</span>
-                    <span class="font-headline font-black text-4xl text-primary leading-none" aria-live="off" :aria-label="`${session.phaseTimeLeft} segundos restantes`">
+                  <div class="mt-4 flex flex-col items-center">
+                    <span class="text-xs font-bold text-primary/50 uppercase tracking-[0.3em] mb-1">{{ $t('training.seconds') }}</span>
+                    <span class="font-headline font-black text-5xl text-primary leading-none" aria-live="off" :aria-label="`${session.phaseTimeLeft} segundos restantes`">
                       {{ session.phaseTimeLeft }}
                     </span>
                   </div>
@@ -254,31 +232,8 @@
             </div>
           </div>
 
-          <!-- Bento inferior -->
-          <div class="grid grid-cols-2 gap-4 w-full max-w-md mt-8 z-10 px-4">
-            <div class="bg-surface-container-low/60 backdrop-blur-sm p-5 rounded-[2rem] border border-white/20 flex flex-col gap-1">
-              <span class="text-on-surface-variant font-label text-[10px] uppercase tracking-wider font-bold">{{ $t('training.repsDuring') }}</span>
-              <div class="flex items-baseline gap-1">
-                <span class="text-primary font-headline text-3xl font-extrabold">
-                  {{ String(session.currentRep).padStart(2, '0') }}
-                </span>
-                <span class="text-on-surface-variant font-body text-sm font-medium">/ {{ routine.reps }}</span>
-              </div>
-            </div>
-            <div class="bg-surface-container-low/60 backdrop-blur-sm p-5 rounded-[2rem] border border-white/20 flex flex-col gap-1">
-              <span class="text-on-surface-variant font-label text-[10px] uppercase tracking-wider font-bold">
-                {{ session.hasReverse ? $t('training.type') : $t('training.durationRep') }}
-              </span>
-              <div class="flex items-baseline gap-1">
-                <span class="text-primary font-headline text-xl font-extrabold leading-tight mt-1">
-                  {{ session.hasReverse ? $t('training.reverse') : `${routine.contractSeconds}s` }}
-                </span>
-              </div>
-            </div>
-          </div>
-
           <!-- Controles -->
-          <div class="mt-8 z-10 flex items-center gap-4">
+          <div class="mt-8 z-10 flex flex-col items-center gap-4">
             <button
               @click="togglePause"
               :aria-label="session.isPaused ? 'Continuar sesión' : 'Pausar sesión'"
@@ -293,22 +248,15 @@
             </button>
             <button
               @click="confirmStop"
-              aria-label="Detener sesión"
-              class="flex items-center justify-center w-14 h-14 rounded-full
-                     bg-error-container text-on-error-container
-                     active:scale-95 transition-all"
+              :disabled="!session.isPaused"
+              aria-label="Abandonar sesión"
+              class="flex items-center justify-center gap-2 text-error/70 hover:text-error
+                     active:scale-95 transition-all duration-300 py-2"
+              :class="session.isPaused ? 'opacity-100' : 'opacity-0 pointer-events-none'"
             >
-              <span class="material-symbols-outlined" aria-hidden="true">stop</span>
-            </button>
-            <!-- Botón privacidad (discreto) -->
-            <button
-              @click="privacyMode = !privacyMode"
-              :aria-label="privacyMode ? 'Desactivar modo discreto' : 'Activar modo discreto'"
-              class="flex items-center justify-center w-10 h-10 rounded-full
-                     text-outline-variant hover:text-primary transition-colors"
-            >
-              <span class="material-symbols-outlined text-lg" aria-hidden="true">
-                {{ privacyMode ? 'visibility' : 'visibility_off' }}
+              <span class="material-symbols-outlined text-lg" aria-hidden="true">logout</span>
+              <span class="font-label font-bold uppercase tracking-widest text-xs">
+                {{ $t('training.stop') }}
               </span>
             </button>
           </div>
@@ -570,8 +518,8 @@ watch(() => session.isActive, (active, wasActive) => {
 /* ── Orbe circular ── */
 .orb-circle {
   position: relative;
-  width: 16rem;
-  height: 16rem;
+  width: 20rem;
+  height: 20rem;
   border-radius: 50%;
   clip-path: circle(50%);
   background: rgba(255, 255, 255, 0.4);
