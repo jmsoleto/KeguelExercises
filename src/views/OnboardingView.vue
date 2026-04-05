@@ -48,6 +48,15 @@
             <h2 class="font-headline font-extrabold text-3xl text-primary">{{ $t('onboarding.step3Title') }}</h2>
             <p class="text-on-surface-variant text-base leading-relaxed">{{ $t('onboarding.step3Desc') }}</p>
           </template>
+
+          <!-- Step 4: Safety -->
+          <template v-if="step === 4">
+            <div class="w-20 h-20 rounded-full bg-tertiary-fixed flex items-center justify-center mx-auto mb-4">
+              <span class="material-symbols-outlined text-4xl text-on-tertiary-fixed" style="font-variation-settings: 'FILL' 1">shield</span>
+            </div>
+            <h2 class="font-headline font-extrabold text-3xl text-primary">{{ $t('onboarding.step4Title') }}</h2>
+            <p class="text-on-surface-variant text-base leading-relaxed">{{ $t('onboarding.step4Desc') }}</p>
+          </template>
         </div>
       </transition>
     </main>
@@ -82,7 +91,7 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const step = ref(0)
-const totalSteps = 4
+const totalSteps = 5
 
 function next() {
   if (step.value < totalSteps - 1) {

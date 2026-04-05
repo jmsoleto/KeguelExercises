@@ -44,7 +44,7 @@
                 {{ $t('program.activeProgram') }}
               </span>
               <span class="text-xs font-label font-semibold text-outline uppercase tracking-wider">
-                {{ program.duration }}
+                {{ program.totalWeeks ? `${program.totalWeeks} sem.` : $t('program.ongoing') }}
               </span>
             </div>
           </div>
@@ -58,7 +58,7 @@
 
           <!-- Footer -->
           <div class="flex items-center justify-between pt-1">
-            <span class="text-xs text-outline">{{ $t('program.perWeek', { n: program.sessionsPerWeek }) }}</span>
+            <span class="text-xs text-outline">{{ $t('program.perDay', { n: program.sessionsPerDay }) }}</span>
             <span class="flex items-center gap-1 text-primary font-label font-bold text-sm">
               {{ $t('program.viewDetails') }}
               <span class="material-symbols-outlined text-base">arrow_forward</span>

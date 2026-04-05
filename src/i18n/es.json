@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "PelvicForce",
-    "version": "v0.1.0"
+    "version": "v0.2.0"
   },
   "nav": {
     "today": "Hoy",
@@ -13,7 +13,7 @@
     "chooseProgram": "Elige un programa.",
     "readyToTrain": "Listo para entrenar.",
     "freeSession": "Sesión libre",
-    "pelvicActivation": "Pelvic Floor Activation",
+    "pelvicActivation": "Activación del Suelo Pélvico",
     "noActiveProgram": "Sin programa activo",
     "intensity": "Intensidad",
     "reps": "Repeticiones",
@@ -37,16 +37,26 @@
     "pause": "Pausar",
     "stop": "Abandonar",
     "tapToReturn": "Toca para volver",
-    "week": "Sem."
+    "week": "Sem.",
+    "exerciseOf": "Ejercicio {current} de {total}",
+    "sessionLabel": "Sesión: {label}",
+    "dailyLimitReached": "Has alcanzado el límite diario recomendado (40 repeticiones). Descansar es parte del entrenamiento.",
+    "painAlert": "Los ejercicios están pausados. Consulta con un profesional de salud si el dolor persiste.",
+    "clearPainAlert": "Ya no tengo dolor",
+    "overdoingWarning": "Te acercas al límite diario. Considera descansar tras esta sesión."
   },
   "phases": {
     "contract": "Contrae",
     "rest": "Relaja",
     "reverse": "Empuja",
     "ready": "Preparado",
+    "prepare": "Prepárate",
+    "descend": "Desciende",
     "contractSub": "Mantener",
     "restSub": "Respira",
-    "reverseSub": "Empuja afuera"
+    "reverseSub": "Empuja afuera",
+    "prepareSub": "Posición",
+    "descendSub": "Libera gradualmente"
   },
   "summary": {
     "title": "Resumen de Sesión",
@@ -59,7 +69,12 @@
     "weeklyProgress": "Progreso Semanal",
     "percentComplete": "{n}% Completado",
     "finish": "Finalizar",
-    "min": "min"
+    "min": "min",
+    "nextExercise": "Siguiente ejercicio",
+    "dailyProgress": "{done} de {total} ejercicios",
+    "painQuestion": "¿Sentiste alguna molestia?",
+    "painYes": "Sí, sentí dolor",
+    "painNo": "No, todo bien"
   },
   "effort": {
     "easy": "Fácil",
@@ -80,21 +95,24 @@
   },
   "program": {
     "title": "Programas",
-    "chooseDescription": "Elige el programa que mejor se adapta a tu objetivo. Cada uno dura 12 semanas con progresión automática.",
+    "chooseDescription": "Elige el programa que mejor se adapta a tu objetivo. Todos basados en evidencia médica.",
     "activeProgram": "Programa activo",
-    "weekOf": "Semana {current}/12",
+    "weekOf": "Semana {current}/{total}",
+    "weekOfIndefinite": "Semana {current}",
     "weeksRemaining": "{n} semanas restantes",
     "programComplete": "¡Programa completado!",
     "currentPhase": "Fase actual",
-    "sessionBlocks": "Bloques de la sesión",
+    "sessionBlocks": "Ejercicios de la sesión",
     "roadmap": "Hoja de ruta",
     "weekRange": "Sem. {from}–{to}",
+    "weekRangeIndefinite": "Sem. {from}+",
     "changeProgram": "Cambiar de programa",
     "confirmChangeTitle": "¿Cambiar de programa?",
     "confirmChangeBody": "Perderás el progreso de la semana {week}. Tu historial de sesiones se mantiene.",
     "cancel": "Cancelar",
     "yesChange": "Sí, cambiar",
     "start": "Comenzar",
+    "perDay": "{n} sesiones/día",
     "perWeek": "{n}x semana",
     "sessionsThisWeek": "Sesiones esta semana:",
     "advanceWeek": "Avanzar semana",
@@ -111,7 +129,20 @@
     "confirmSwitchBody": "Dejarás \"{from}\" y comenzarás \"{to}\" desde la semana 1.",
     "yesSwitch": "Sí, cambiar",
     "contract": "contrae",
-    "rest": "relaja"
+    "rest": "relaja",
+    "ongoing": "Continuo",
+    "medicalWarning": "Aviso médico",
+    "level": "Nivel",
+    "duration": "{n} semanas"
+  },
+  "exerciseTypes": {
+    "long_holds": "Contracciones sostenidas",
+    "quick_flicks": "Contracciones rápidas",
+    "elevator": "Elevador",
+    "reverse_kegel": "Kegel inverso",
+    "bridge_kegel": "Puente con Kegel",
+    "squat_kegel": "Sentadilla con Kegel",
+    "isometric_hold": "Isométrico graduado"
   },
   "setTypes": {
     "slow": "Contracciones lentas",
@@ -157,6 +188,9 @@
   },
   "levels": {
     "beginner": "Principiante",
+    "beginner_to_intermediate": "Principiante → Intermedio",
+    "beginner_to_advanced": "Principiante → Avanzado",
+    "intermediate": "Intermedio",
     "regular": "Regular",
     "consistent": "Consistente",
     "advanced": "Avanzado",
@@ -173,15 +207,26 @@
   },
   "onboarding": {
     "welcome": "Bienvenido a",
-    "subtitle": "Tu entrenador de suelo pélvico personalizado",
+    "subtitle": "Tu entrenador de suelo pélvico con base médica",
     "step1Title": "Ejercicios guiados",
     "step1Desc": "Sesiones con temporizador inteligente, feedback háptico y sonoro para guiarte en cada repetición.",
-    "step2Title": "Programas de 12 semanas",
-    "step2Desc": "Tres programas especializados con progresión automática adaptada a tu objetivo.",
+    "step2Title": "Programas personalizados",
+    "step2Desc": "6 programas con base médica: desde fundamentos hasta recuperación post-cirugía, cada uno con progresión científica.",
     "step3Title": "Seguimiento de progreso",
     "step3Desc": "Historial completo, rachas de consistencia y estadísticas para mantener tu motivación.",
+    "step4Title": "Tu seguridad primero",
+    "step4Desc": "Límites diarios médicos, alertas de dolor y recomendaciones profesionales integradas.",
     "next": "Siguiente",
     "getStarted": "Comenzar",
     "skip": "Omitir"
+  },
+  "safety": {
+    "dailyLimitTitle": "Límite diario alcanzado",
+    "dailyLimitBody": "Has completado {count} repeticiones hoy. El máximo recomendado es {max}. Descansar es parte del entrenamiento.",
+    "painAlertTitle": "Ejercicios pausados",
+    "painAlertBody": "Reportaste dolor durante un ejercicio. Consulta con un fisioterapeuta de suelo pélvico antes de continuar.",
+    "overdoingTitle": "Cerca del límite",
+    "overdoingBody": "Llevas {count} repeticiones hoy. Considera descansar tras esta sesión.",
+    "clearPain": "Ya no tengo dolor"
   }
 }

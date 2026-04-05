@@ -9,6 +9,8 @@ import { useSettingsStore } from './settings'
 //   contract → vibración fuerte corta (activar músculo)
 //   rest     → vibración suave doble (soltar)
 //   reverse  → vibración triple rápida (atención)
+//   prepare  → vibración media sostenida (prepararse)
+//   descend  → vibración media doble lenta (bajar niveles)
 //   complete → vibración larga satisfactoria
 // ─────────────────────────────────────────────
 
@@ -67,6 +69,26 @@ async function vibrateReverse() {
   }
 }
 
+async function vibratePrepare() {
+  const h = await getHaptics()
+  if (h) {
+    await h.impact({ style: 'medium' })
+    setTimeout(() => h.impact({ style: 'light' }), 200)
+  } else {
+    webVibrate([60, 120, 40])
+  }
+}
+
+async function vibrateDescend() {
+  const h = await getHaptics()
+  if (h) {
+    await h.impact({ style: 'medium' })
+    setTimeout(() => h.impact({ style: 'medium' }), 250)
+  } else {
+    webVibrate([50, 150, 50])
+  }
+}
+
 async function vibrateComplete() {
   const h = await getHaptics()
   if (h) {
@@ -100,6 +122,8 @@ export function useHapticsService() {
         contract: vibrateContract,
         rest:     vibrateRest,
         reverse:  vibrateReverse,
+        prepare:  vibratePrepare,
+        descend:  vibrateDescend,
       }
       await (map[phase] ?? vibrateRest)()
     } catch (e) {

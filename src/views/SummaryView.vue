@@ -29,6 +29,13 @@
         </p>
       </section>
 
+      <!-- Multi-exercise progress -->
+      <div v-if="session.totalExercisesInQueue > 1" class="bg-primary/10 rounded-2xl p-4 mb-8 text-center">
+        <p class="text-sm font-label font-bold text-primary">
+          {{ $t('summary.dailyProgress', { done: session.currentExerciseIndex + 1, total: session.totalExercisesInQueue }) }}
+        </p>
+      </div>
+
       <!-- Stats Bento Grid -->
       <div class="grid grid-cols-3 gap-4 mb-12">
         <div class="bg-surface-container-lowest rounded-xl p-5 flex flex-col justify-between min-h-[120px] shadow-sm">
@@ -76,7 +83,6 @@
               >
                 <span
                   class="material-symbols-outlined"
-                  aria-hidden="true"
                   :style="selectedEffort === item.value ? `font-variation-settings: 'FILL' 1` : ''"
                 >{{ item.icon }}</span>
               </div>
@@ -86,6 +92,27 @@
               >{{ item.label }}</span>
             </button>
           </div>
+        </div>
+      </section>
+
+      <!-- Pain question -->
+      <section class="mb-12">
+        <h3 class="font-headline font-bold text-lg text-primary mb-4">{{ $t('summary.painQuestion') }}</h3>
+        <div class="flex gap-3">
+          <button
+            @click="handlePainReport(true)"
+            class="flex-1 py-3 rounded-xl text-sm font-label font-bold transition-all active:scale-95"
+            :class="painAnswer === true
+              ? 'bg-error text-white'
+              : 'bg-surface-container-high text-on-surface-variant'"
+          >{{ $t('summary.painYes') }}</button>
+          <button
+            @click="handlePainReport(false)"
+            class="flex-1 py-3 rounded-xl text-sm font-label font-bold transition-all active:scale-95"
+            :class="painAnswer === false
+              ? 'bg-tertiary-fixed text-on-tertiary-fixed'
+              : 'bg-surface-container-high text-on-surface-variant'"
+          >{{ $t('summary.painNo') }}</button>
         </div>
       </section>
 
@@ -115,14 +142,28 @@
 
     <!-- CTA fijo -->
     <div class="fixed bottom-0 left-0 w-full z-50 px-6 pb-8 pb-safe bg-gradient-to-t from-background via-background/95 to-transparent pt-6">
-      <button
-        @click="finish"
-        class="w-full bg-gradient-to-br from-primary to-primary-container text-white
-               font-headline font-bold py-5 rounded-xl shadow-xl shadow-primary/10
-               hover:opacity-95 active:scale-[0.98] transition-all duration-200"
-      >
-        {{ $t('summary.finish') }}
-      </button>
+      <div class="space-y-3">
+        <!-- Next exercise button -->
+        <button
+          v-if="session.hasMoreExercises"
+          @click="nextExercise"
+          class="w-full bg-gradient-to-br from-primary to-primary-container text-white
+                 font-headline font-bold py-5 rounded-xl shadow-xl shadow-primary/10
+                 hover:opacity-95 active:scale-[0.98] transition-all duration-200"
+        >
+          {{ $t('summary.nextExercise') }}
+        </button>
+        <button
+          @click="finish"
+          class="w-full font-headline font-bold py-5 rounded-xl
+                 hover:opacity-95 active:scale-[0.98] transition-all duration-200"
+          :class="session.hasMoreExercises
+            ? 'bg-surface-container text-primary'
+            : 'bg-gradient-to-br from-primary to-primary-container text-white shadow-xl shadow-primary/10'"
+        >
+          {{ $t('summary.finish') }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -132,15 +173,18 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useSessionStore } from '@/stores/session'
+import { useSafetyStore } from '@/stores/safety'
 
 const router  = useRouter()
 const session = useSessionStore()
+const safety  = useSafetyStore()
 const { t } = useI18n()
 
 const last = computed(() => session.lastSession)
 const durationMin = computed(() => Math.ceil((last.value?.duration ?? 0) / 60))
 
 const selectedEffort = ref(null)
+const painAnswer = ref(null)
 
 const effortLevels = computed(() => [
   { value: 1, icon: 'sentiment_satisfied',       label: t('effort.easy')    },
@@ -160,6 +204,21 @@ const weekPercent   = computed(() => {
   const done = weekActivity.value.filter(Boolean).length
   return Math.round((done / 7) * 100)
 })
+
+function handlePainReport(hasPain) {
+  painAnswer.value = hasPain
+  if (hasPain) {
+    safety.reportPain()
+  }
+}
+
+function nextExercise() {
+  if (selectedEffort.value !== null) {
+    session.completeSession(selectedEffort.value)
+  }
+  session.advanceToNextExercise()
+  router.push('/training')
+}
 
 function finish() {
   if (selectedEffort.value !== null) {

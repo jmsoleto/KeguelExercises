@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "PelvicForce",
-    "version": "v0.1.0"
+    "version": "v0.2.0"
   },
   "nav": {
     "today": "Today",
@@ -37,16 +37,26 @@
     "pause": "Pause",
     "stop": "Quit",
     "tapToReturn": "Tap to return",
-    "week": "Wk."
+    "week": "Wk.",
+    "exerciseOf": "Exercise {current} of {total}",
+    "sessionLabel": "Session: {label}",
+    "dailyLimitReached": "You've reached the recommended daily limit (40 reps). Rest is part of training.",
+    "painAlert": "Exercises are paused. Consult a health professional if pain persists.",
+    "clearPainAlert": "I no longer have pain",
+    "overdoingWarning": "You're approaching the daily limit. Consider resting after this session."
   },
   "phases": {
     "contract": "Contract",
     "rest": "Relax",
     "reverse": "Push",
     "ready": "Ready",
+    "prepare": "Get Ready",
+    "descend": "Release",
     "contractSub": "Hold",
     "restSub": "Breathe",
-    "reverseSub": "Push out"
+    "reverseSub": "Push out",
+    "prepareSub": "Position",
+    "descendSub": "Release gradually"
   },
   "summary": {
     "title": "Session Summary",
@@ -59,7 +69,12 @@
     "weeklyProgress": "Weekly Progress",
     "percentComplete": "{n}% Complete",
     "finish": "Finish",
-    "min": "min"
+    "min": "min",
+    "nextExercise": "Next exercise",
+    "dailyProgress": "{done} of {total} exercises",
+    "painQuestion": "Did you feel any discomfort?",
+    "painYes": "Yes, I felt pain",
+    "painNo": "No, all good"
   },
   "effort": {
     "easy": "Easy",
@@ -80,21 +95,24 @@
   },
   "program": {
     "title": "Programs",
-    "chooseDescription": "Choose the program that best fits your goal. Each one lasts 12 weeks with automatic progression.",
+    "chooseDescription": "Choose the program that best fits your goal. All backed by medical evidence.",
     "activeProgram": "Active program",
-    "weekOf": "Week {current}/12",
+    "weekOf": "Week {current}/{total}",
+    "weekOfIndefinite": "Week {current}",
     "weeksRemaining": "{n} weeks remaining",
     "programComplete": "Program completed!",
     "currentPhase": "Current phase",
-    "sessionBlocks": "Session blocks",
+    "sessionBlocks": "Session exercises",
     "roadmap": "Roadmap",
     "weekRange": "Wk. {from}–{to}",
+    "weekRangeIndefinite": "Wk. {from}+",
     "changeProgram": "Change program",
     "confirmChangeTitle": "Change program?",
     "confirmChangeBody": "You'll lose progress from week {week}. Your session history will be kept.",
     "cancel": "Cancel",
     "yesChange": "Yes, change",
     "start": "Start",
+    "perDay": "{n} sessions/day",
     "perWeek": "{n}x week",
     "sessionsThisWeek": "Sessions this week:",
     "advanceWeek": "Advance week",
@@ -111,7 +129,20 @@
     "confirmSwitchBody": "You'll leave \"{from}\" and start \"{to}\" from week 1.",
     "yesSwitch": "Yes, switch",
     "contract": "contract",
-    "rest": "relax"
+    "rest": "relax",
+    "ongoing": "Ongoing",
+    "medicalWarning": "Medical notice",
+    "level": "Level",
+    "duration": "{n} weeks"
+  },
+  "exerciseTypes": {
+    "long_holds": "Sustained contractions",
+    "quick_flicks": "Quick flicks",
+    "elevator": "Elevator",
+    "reverse_kegel": "Reverse Kegel",
+    "bridge_kegel": "Bridge with Kegel",
+    "squat_kegel": "Squat with Kegel",
+    "isometric_hold": "Graduated isometric"
   },
   "setTypes": {
     "slow": "Slow contractions",
@@ -157,6 +188,9 @@
   },
   "levels": {
     "beginner": "Beginner",
+    "beginner_to_intermediate": "Beginner → Intermediate",
+    "beginner_to_advanced": "Beginner → Advanced",
+    "intermediate": "Intermediate",
     "regular": "Regular",
     "consistent": "Consistent",
     "advanced": "Advanced",
@@ -173,15 +207,26 @@
   },
   "onboarding": {
     "welcome": "Welcome to",
-    "subtitle": "Your personalized pelvic floor trainer",
+    "subtitle": "Your medically-backed pelvic floor trainer",
     "step1Title": "Guided exercises",
     "step1Desc": "Sessions with smart timer, haptic and sound feedback to guide you through every rep.",
-    "step2Title": "12-week programs",
-    "step2Desc": "Three specialized programs with automatic progression adapted to your goal.",
+    "step2Title": "Personalized programs",
+    "step2Desc": "6 medically-backed programs: from fundamentals to post-surgery recovery, each with scientific progression.",
     "step3Title": "Progress tracking",
     "step3Desc": "Complete history, consistency streaks, and stats to keep you motivated.",
+    "step4Title": "Your safety first",
+    "step4Desc": "Medical daily limits, pain alerts, and integrated professional recommendations.",
     "next": "Next",
     "getStarted": "Get started",
     "skip": "Skip"
+  },
+  "safety": {
+    "dailyLimitTitle": "Daily limit reached",
+    "dailyLimitBody": "You've completed {count} reps today. The recommended max is {max}. Rest is part of training.",
+    "painAlertTitle": "Exercises paused",
+    "painAlertBody": "You reported pain during an exercise. Please consult a pelvic floor physiotherapist before continuing.",
+    "overdoingTitle": "Near the limit",
+    "overdoingBody": "You've done {count} reps today. Consider resting after this session.",
+    "clearPain": "I no longer have pain"
   }
 }

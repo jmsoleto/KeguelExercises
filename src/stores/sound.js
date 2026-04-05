@@ -9,6 +9,8 @@ import { useSettingsStore } from './settings'
 //   contract → tono agudo ascendente (activación)
 //   rest     → tono suave descendente (relajar)
 //   reverse  → doble beep corto (atención, empuja)
+//   prepare  → tono cálido sostenido (prepararse)
+//   descend  → tono descendente escalonado (bajar niveles)
 //   complete → acorde mayor (sesión completada)
 // ─────────────────────────────────────────────
 
@@ -95,6 +97,36 @@ function reverseSound() {
   setTimeout(() => playTone(587, 0.08, 'triangle', 0.25), 120)
 }
 
+function prepareSound() {
+  // Tono cálido sostenido: "prepárate"
+  const ctx = getContext()
+  if (!ctx) return
+  const osc = ctx.createOscillator()
+  const gain = ctx.createGain()
+
+  osc.type = 'triangle'
+  osc.frequency.setValueAtTime(392, ctx.currentTime)       // G4
+  osc.frequency.linearRampToValueAtTime(440, ctx.currentTime + 0.3) // A4
+
+  gain.gain.setValueAtTime(0, ctx.currentTime)
+  gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.05)
+  gain.gain.setValueAtTime(0.25, ctx.currentTime + 0.25)
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5)
+
+  osc.connect(gain)
+  gain.connect(ctx.destination)
+  osc.start(ctx.currentTime)
+  osc.stop(ctx.currentTime + 0.5)
+}
+
+function descendSound() {
+  // Tono escalonado descendente: "baja niveles"
+  const freqs = [659, 554, 440, 330] // E5 → C#5 → A4 → E4
+  freqs.forEach((freq, i) => {
+    setTimeout(() => playTone(freq, 0.1, 'sine', 0.2), i * 100)
+  })
+}
+
 function completeSound() {
   // Acorde mayor ascendente: C-E-G-C
   const delays = [0, 80, 160, 300]
@@ -135,6 +167,8 @@ export function useSoundService() {
         contract: contractSound,
         rest:     restSound,
         reverse:  reverseSound,
+        prepare:  prepareSound,
+        descend:  descendSound,
       }
       ;(sounds[phase] ?? restSound)()
     } catch (e) {

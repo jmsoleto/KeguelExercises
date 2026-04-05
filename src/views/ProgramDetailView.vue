@@ -26,30 +26,52 @@
             <p class="text-on-surface-variant text-sm mt-1">{{ program.tagline }}</p>
           </div>
           <div v-if="isCurrentProgram" :class="['px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider', program.colorClass]">
-            {{ $t('program.weekOf', { current: currentWeek }) }}
+            {{ isIndefinite
+              ? $t('program.weekOfIndefinite', { current: currentWeek })
+              : $t('program.weekOf', { current: currentWeek, total: program.totalWeeks })
+            }}
           </div>
         </div>
 
         <p class="text-on-surface-variant text-sm leading-relaxed pt-2">{{ program.description }}</p>
 
+        <!-- Medical warning -->
+        <div v-if="program.medicalWarning" class="bg-error/10 rounded-xl p-3 border-l-2 border-error flex gap-2 mt-2">
+          <span class="material-symbols-outlined text-error text-sm flex-shrink-0 mt-0.5">warning</span>
+          <p class="text-xs leading-relaxed text-error">{{ program.medicalWarning }}</p>
+        </div>
+
         <div class="flex items-center gap-4 pt-2 text-xs text-outline">
-          <span>{{ program.duration }}</span>
+          <span>{{ isIndefinite ? $t('program.ongoing') : $t('program.duration', { n: program.totalWeeks }) }}</span>
           <span>·</span>
-          <span>{{ $t('program.perWeek', { n: program.sessionsPerWeek }) }}</span>
+          <span>{{ $t('program.perDay', { n: program.sessionsPerDay }) }}</span>
           <span>·</span>
           <span>{{ program.benefit }}</span>
         </div>
 
-        <!-- Barra de progreso (solo si es el plan activo) -->
-        <div v-if="isCurrentProgram" class="space-y-2 pt-3">
+        <!-- Level badge -->
+        <div class="pt-1">
+          <span class="text-xs text-outline">{{ $t('program.level') }}: {{ $t(`levels.${program.level}`) }}</span>
+        </div>
+
+        <!-- Barra de progreso (solo si es el plan activo y finito) -->
+        <div v-if="isCurrentProgram && !isIndefinite" class="space-y-2 pt-3">
           <div class="flex gap-1">
             <div
-              v-for="w in 12" :key="w"
+              v-for="w in program.totalWeeks" :key="w"
               class="flex-1 h-1.5 rounded-full transition-all duration-500"
               :class="w <= currentWeek ? 'bg-primary' : 'bg-surface-container-highest'"
             />
           </div>
           <p class="text-xs text-outline text-right">{{ weekProgressText }}</p>
+        </div>
+
+        <!-- Indicador para plan indefinido -->
+        <div v-if="isCurrentProgram && isIndefinite" class="pt-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-sm">all_inclusive</span>
+            <span class="text-xs text-outline">{{ $t('program.weekOfIndefinite', { current: currentWeek }) }}</span>
+          </div>
         </div>
 
         <!-- Progresión semanal (solo si es el plan activo) -->
@@ -59,7 +81,7 @@
               {{ $t('program.sessionsThisWeek') }} <strong class="text-primary">{{ sessionsThisWeek }}/{{ routines.MIN_SESSIONS_TO_ADVANCE }}</strong>
             </span>
             <button
-              v-if="currentWeek < 12"
+              v-if="!isProgramComplete"
               @click="handleAdvanceWeek"
               :disabled="!canAdvance"
               class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-label font-bold transition-all active:scale-95"
@@ -106,12 +128,17 @@
             >
               <div class="flex items-center justify-between mb-1">
                 <p class="font-headline font-bold text-sm text-primary">{{ phase.name }}</p>
-                <p class="text-xs text-outline">{{ $t('program.weekRange', { from: phase.weeks[0], to: phase.weeks[1] }) }}</p>
+                <p class="text-xs text-outline">
+                  {{ phase.weeks[1] === null
+                    ? $t('program.weekRangeIndefinite', { from: phase.weeks[0] })
+                    : $t('program.weekRange', { from: phase.weeks[0], to: phase.weeks[1] })
+                  }}
+                </p>
               </div>
               <p class="text-xs text-on-surface-variant leading-relaxed">{{ phase.description }}</p>
 
               <!-- Tip de la fase -->
-              <div class="bg-tertiary/5 rounded-xl p-3 border-l-2 border-tertiary flex gap-2 mt-2">
+              <div v-if="phase.tip" class="bg-tertiary/5 rounded-xl p-3 border-l-2 border-tertiary flex gap-2 mt-2">
                 <span class="material-symbols-outlined text-tertiary text-sm flex-shrink-0 mt-0.5">tips_and_updates</span>
                 <p class="text-xs leading-relaxed text-on-surface-variant">{{ phase.tip }}</p>
               </div>
@@ -120,27 +147,32 @@
         </div>
       </section>
 
-      <!-- Bloques de sesión de la fase 1 (preview) -->
+      <!-- Ejercicios de la sesión actual (preview) -->
       <section class="space-y-4">
         <h3 class="font-headline font-bold text-xl text-primary">{{ $t('program.sessionBlocks') }}</h3>
         <div class="bg-surface-container-lowest rounded-2xl p-6 space-y-3 shadow-sm">
           <p class="text-xs font-label uppercase tracking-widest text-outline mb-2">
             {{ isCurrentProgram ? activePhase?.name : program.phases[0].name }}
           </p>
-          <div
-            v-for="(set, i) in (isCurrentProgram ? activePhase?.sets : program.phases[0].sets) ?? []"
-            :key="i"
-            class="flex items-center gap-4 p-4 rounded-xl bg-surface-container"
-          >
-            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-surface-container-high">
-              <span class="material-symbols-outlined text-base text-secondary">{{ setIcon(set.type) }}</span>
-            </div>
-            <div class="flex-grow">
-              <p class="font-label font-bold text-sm text-on-surface">{{ setLabel(set.type) }}</p>
-              <p class="text-xs text-on-surface-variant mt-0.5">
-                {{ set.reps }} reps · {{ set.contractSeconds }}s {{ $t('program.contract') }} · {{ set.restSeconds }}s {{ $t('program.rest') }}
-                <span v-if="set.reverseSeconds"> · {{ set.reverseSeconds }}s reverse</span>
-              </p>
+
+          <!-- Sesiones del día -->
+          <div v-for="session in previewSessions" :key="session.id" class="space-y-2">
+            <p class="text-xs font-label font-bold text-secondary">{{ session.label }}</p>
+            <div
+              v-for="(ex, i) in session.exercises"
+              :key="i"
+              class="flex items-center gap-4 p-4 rounded-xl bg-surface-container"
+            >
+              <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-surface-container-high">
+                <span class="material-symbols-outlined text-base text-secondary">{{ exerciseIcon(ex.exerciseId) }}</span>
+              </div>
+              <div class="flex-grow">
+                <p class="font-label font-bold text-sm text-on-surface">{{ $t(`exerciseTypes.${ex.exerciseId}`) }}</p>
+                <p class="text-xs text-on-surface-variant mt-0.5">
+                  {{ ex.reps }} reps · {{ ex.contractSeconds }}s {{ $t('program.contract') }} · {{ ex.relaxSeconds }}s {{ $t('program.rest') }}
+                  <span v-if="ex.levels"> · {{ ex.levels }} niveles</span>
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -148,7 +180,6 @@
 
       <!-- CTA principal -->
       <section class="pb-8">
-        <!-- Caso 1: No hay plan activo → "Comenzar con este plan" -->
         <button
           v-if="!hasActiveProgram"
           @click="startProgram"
@@ -159,7 +190,6 @@
           {{ $t('program.startThisPlan') }}
         </button>
 
-        <!-- Caso 2: Este ES el plan activo → "Abandonar plan" -->
         <button
           v-else-if="isCurrentProgram"
           @click="showConfirm = true"
@@ -171,7 +201,6 @@
           {{ $t('program.abandonPlan') }}
         </button>
 
-        <!-- Caso 3: Hay otro plan activo → "Cambiar a este plan" -->
         <button
           v-else
           @click="showConfirm = true"
@@ -216,7 +245,7 @@ import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { useRoutinesStore, PROGRAMS } from '@/stores/routines'
+import { useRoutinesStore, PROGRAMS, EXERCISES } from '@/stores/routines'
 import { useSessionStore } from '@/stores/session'
 
 const route   = useRoute()
@@ -230,26 +259,36 @@ const advanceMessage = ref('')
 
 const { selectedProgramId, currentWeek, activePhase } = storeToRefs(routines)
 
-// El programa que estamos viendo (desde la URL)
 const program = computed(() =>
   PROGRAMS.find(p => p.id === route.params.id) ?? null
 )
 
-// ¿Tiene algún programa activo?
+const isIndefinite = computed(() => program.value?.totalWeeks === null)
 const hasActiveProgram = computed(() => !!selectedProgramId.value)
-
-// ¿Este programa es el actualmente activo?
 const isCurrentProgram = computed(() =>
   selectedProgramId.value === route.params.id
 )
+const isProgramComplete = computed(() => {
+  if (isIndefinite.value) return false
+  return currentWeek.value >= (program.value?.totalWeeks ?? 12)
+})
 
-// Progresión semanal
 const sessionsThisWeek = computed(() => routines.weekSessionCount(session.history))
-const canAdvance = computed(() => sessionsThisWeek.value >= routines.MIN_SESSIONS_TO_ADVANCE && currentWeek.value < 12)
+const canAdvance = computed(() =>
+  sessionsThisWeek.value >= routines.MIN_SESSIONS_TO_ADVANCE && !isProgramComplete.value
+)
 
 const weekProgressText = computed(() => {
-  const remaining = 12 - currentWeek.value
+  if (isIndefinite.value) return ''
+  const remaining = program.value.totalWeeks - currentWeek.value
   return remaining === 0 ? t('program.programComplete') : t('program.weeksRemaining', { n: remaining })
+})
+
+// Preview: sesiones de la fase activa o primera fase
+const previewSessions = computed(() => {
+  const phase = isCurrentProgram.value ? activePhase.value : program.value?.phases[0]
+  if (!phase?.weeklySchedule?.length) return []
+  return phase.weeklySchedule[0].sessions ?? []
 })
 
 function handleAdvanceWeek() {
@@ -261,27 +300,24 @@ function handleAdvanceWeek() {
 }
 
 function isPhaseActive(phase) {
+  if (phase.weeks[1] === null) return currentWeek.value >= phase.weeks[0]
   return currentWeek.value >= phase.weeks[0] && currentWeek.value <= phase.weeks[1]
 }
 function isPhaseCompleted(phase) {
+  if (phase.weeks[1] === null) return false
   return currentWeek.value > phase.weeks[1]
 }
 
-function setIcon(type) {
-  return { slow: 'self_improvement', fast: 'bolt', reverse: 'undo' }[type] ?? 'fitness_center'
+const EXERCISE_ICONS = Object.fromEntries(EXERCISES.map(e => [e.id, e.iconKey]))
+function exerciseIcon(exerciseId) {
+  return EXERCISE_ICONS[exerciseId] ?? 'fitness_center'
 }
-function setLabel(type) {
-  return { slow: t('setTypes.slow'), fast: t('setTypes.fast'), reverse: t('setTypes.reverse') }[type] ?? type
-}
-
-// --- Acciones ---
 
 function startProgram() {
   routines.selectProgram(route.params.id)
   router.push('/training')
 }
 
-// Textos del modal según el caso
 const confirmTitle = computed(() =>
   isCurrentProgram.value
     ? t('program.confirmAbandonTitle')
@@ -300,10 +336,8 @@ const confirmButtonText = computed(() =>
 
 function confirmAction() {
   if (isCurrentProgram.value) {
-    // Abandonar plan
     routines.resetProgram()
   } else {
-    // Cambiar a este plan
     routines.selectProgram(route.params.id)
   }
   showConfirm.value = false
