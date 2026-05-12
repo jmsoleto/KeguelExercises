@@ -37,7 +37,12 @@
     "pause": "Pausar",
     "stop": "Abandonar",
     "tapToReturn": "Toca para volver",
-    "week": "Sem."
+    "week": "Sem.",
+    "day": "Día",
+    "getReady": "Prepárate",
+    "noPlanTitle": "Sin plan activo",
+    "noPlanBody": "Elige un programa de entrenamiento para poder comenzar tus sesiones.",
+    "choosePlan": "Elegir plan"
   },
   "phases": {
     "contract": "Contrae",

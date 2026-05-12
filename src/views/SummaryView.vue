@@ -69,10 +69,10 @@
               class="group flex flex-col items-center gap-3 transition-transform active:scale-90"
             >
               <div
-                class="rounded-full flex items-center justify-center transition-all duration-300"
+                class="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300"
                 :class="selectedEffort === item.value
-                  ? 'w-14 h-14 bg-primary text-white shadow-lg shadow-primary/20'
-                  : 'w-12 h-12 bg-surface-container-lowest text-on-surface-variant hover:bg-primary hover:text-white'"
+                  ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-110'
+                  : 'bg-surface-container-lowest text-on-surface-variant'"
               >
                 <span
                   class="material-symbols-outlined"
@@ -95,21 +95,7 @@
           <h3 class="font-headline font-bold text-xl text-primary">{{ $t('summary.weeklyProgress') }}</h3>
           <span class="text-xs font-semibold text-tertiary">{{ $t('summary.percentComplete', { n: weekPercent }) }}</span>
         </div>
-        <div class="flex gap-2 h-12 items-end">
-          <div
-            v-for="(active, i) in weekActivity"
-            :key="i"
-            class="flex-1 rounded-t-lg transition-all duration-700"
-            :class="[
-              active ? 'bg-primary' : 'bg-surface-container-highest',
-              i === todayIndex ? 'ring-2 ring-primary-fixed-dim ring-inset' : ''
-            ]"
-            :style="{ height: active ? `${40 + Math.random() * 60}%` : '10%' }"
-          />
-        </div>
-        <div class="flex justify-between mt-3 text-[10px] font-label font-bold text-on-surface-variant uppercase tracking-widest px-1">
-          <span v-for="(d, i) in dayLabels" :key="i" :class="i === todayIndex ? 'text-primary' : ''">{{ d }}</span>
-        </div>
+        <WeeklyChart />
       </section>
     </main>
 
@@ -132,6 +118,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useSessionStore } from '@/stores/session'
+import WeeklyChart from '@/components/WeeklyChart.vue'
 
 const router  = useRouter()
 const session = useSessionStore()
@@ -151,11 +138,6 @@ const effortLevels = computed(() => [
 ])
 
 const weekActivity  = computed(() => session.weekActivity)
-
-const dayKeys = ['days.mon', 'days.tue', 'days.wed', 'days.thu', 'days.fri', 'days.sat', 'days.sun']
-const dayLabels = computed(() => dayKeys.map(k => t(k)))
-
-const todayIndex    = computed(() => (new Date().getDay() + 6) % 7)
 const weekPercent   = computed(() => {
   const done = weekActivity.value.filter(Boolean).length
   return Math.round((done / 7) * 100)

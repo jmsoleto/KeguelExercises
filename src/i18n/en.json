@@ -37,7 +37,12 @@
     "pause": "Pause",
     "stop": "Quit",
     "tapToReturn": "Tap to return",
-    "week": "Wk."
+    "week": "Wk.",
+    "day": "Day",
+    "getReady": "Get ready",
+    "noPlanTitle": "No active plan",
+    "noPlanBody": "Choose a training program to start your sessions.",
+    "choosePlan": "Choose a plan"
   },
   "phases": {
     "contract": "Contract",

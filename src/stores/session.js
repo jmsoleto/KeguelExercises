@@ -39,16 +39,14 @@ export const useSessionStore = defineStore('session', () => {
   )
 
   // ─── API pública ──────────────────────────────
-  const READY_DURATION = 5
-
   function startSession(routine) {
     activeRoutine.value = routine
     isActive.value      = true
     isPaused.value      = false
     currentRep.value    = 0
     elapsedTime.value   = 0
-    phase.value         = 'ready'
-    phaseTimeLeft.value = READY_DURATION
+    phase.value         = 'contract'
+    phaseTimeLeft.value = contractDuration.value
     _tick()
   }
 
@@ -87,11 +85,6 @@ export const useSessionStore = defineStore('session', () => {
   //  Ciclo con reverse:  contract → rest → reverse → rest → [siguiente rep]
   //
   function _nextPhase() {
-    if (phase.value === 'ready') {
-      phase.value         = 'contract'
-      phaseTimeLeft.value = contractDuration.value
-      return
-    }
     if (phase.value === 'contract') {
       phase.value         = 'rest'
       phaseTimeLeft.value = restDuration.value
@@ -135,7 +128,7 @@ export const useSessionStore = defineStore('session', () => {
     clearInterval(timer)
     timer = setInterval(() => {
       if (isPaused.value || !isActive.value) return
-      if (phase.value !== 'ready') elapsedTime.value++
+      elapsedTime.value++
       phaseTimeLeft.value--
       if (phaseTimeLeft.value <= 0) _nextPhase()
     }, 1000)

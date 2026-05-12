@@ -51,25 +51,6 @@
         </div>
       </section>
 
-      <!-- Consistencia Semanal -->
-      <section class="space-y-4">
-        <h3 class="font-headline font-bold text-xl text-primary">{{ $t('profile.weeklyConsistency') }}</h3>
-        <div class="bg-surface-container-low rounded-xl p-5 flex items-end justify-between h-28 gap-2">
-          <div
-            v-for="(active, i) in weekActivity"
-            :key="i"
-            class="w-full bg-surface-container-highest rounded-full relative overflow-hidden"
-            style="height: 80px"
-          >
-            <div
-              class="absolute bottom-0 w-full rounded-t-full transition-all duration-700"
-              :class="active ? 'bg-primary' : 'bg-surface-container-high'"
-              :style="{ height: active ? barHeights[i] : '10%' }"
-            />
-          </div>
-        </div>
-      </section>
-
       <!-- Cuenta -->
       <section class="space-y-4">
         <h3 class="font-headline font-bold text-lg text-primary px-2">{{ $t('profile.account') }}</h3>
@@ -266,7 +247,6 @@ function saveName() {
 
 // ─── Stats ───
 const totalSessions = computed(() => session.history.length)
-const weekActivity  = computed(() => session.weekActivity)
 const userLevel     = computed(() => {
   if (totalSessions.value < 10)  return t('levels.beginner')
   if (totalSessions.value < 30)  return t('levels.regular')
@@ -274,8 +254,6 @@ const userLevel     = computed(() => {
   if (totalSessions.value < 150) return t('levels.advanced')
   return t('levels.expert')
 })
-
-const barHeights = ['60%', '75%', '50%', '85%', '100%', '65%', '45%']
 
 // ─── Sound ───
 function toggleSound() {

@@ -56,16 +56,12 @@
         <div v-if="isCurrentProgram" class="bg-surface-container-lowest rounded-xl p-4 mt-3 space-y-3">
           <div class="flex items-center justify-between">
             <span class="text-xs font-label text-on-surface-variant">
-              {{ $t('program.sessionsThisWeek') }} <strong class="text-primary">{{ sessionsThisWeek }}/{{ routines.MIN_SESSIONS_TO_ADVANCE }}</strong>
+              {{ $t('program.sessionsThisWeek') }} <strong class="text-primary">{{ planWeekSessions }}/{{ routines.MIN_SESSIONS_TO_ADVANCE }}</strong>
             </span>
             <button
-              v-if="currentWeek < 12"
+              v-if="canAdvance"
               @click="handleAdvanceWeek"
-              :disabled="!canAdvance"
-              class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-label font-bold transition-all active:scale-95"
-              :class="canAdvance
-                ? 'bg-primary text-white'
-                : 'bg-surface-container-high text-outline cursor-not-allowed'"
+              class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-label font-bold transition-all active:scale-95 bg-primary text-white"
             >
               <span class="material-symbols-outlined text-sm">arrow_forward</span>
               {{ $t('program.advanceWeek') }}
@@ -118,6 +114,73 @@
             </div>
           </div>
         </div>
+      </section>
+
+      <!-- Desglose por semana -->
+      <section class="space-y-4">
+        <button
+          @click="showWeekBreakdown = !showWeekBreakdown"
+          class="w-full flex items-center justify-between group"
+        >
+          <h3 class="font-headline font-bold text-xl text-primary">Desglose por semana</h3>
+          <span
+            class="material-symbols-outlined text-primary transition-transform duration-200"
+            :class="showWeekBreakdown ? 'rotate-180' : ''"
+          >expand_more</span>
+        </button>
+
+        <transition name="breakdown">
+          <div v-if="showWeekBreakdown" class="space-y-2">
+            <div
+              v-for="week in 12"
+              :key="week"
+              class="rounded-2xl overflow-hidden border transition-colors"
+              :class="isCurrentProgram && week === currentWeek
+                ? 'border-primary bg-primary/5'
+                : 'border-outline-variant/30 bg-surface-container-lowest'"
+            >
+              <!-- Cabecera de semana -->
+              <div class="flex items-center justify-between px-4 py-3">
+                <div class="flex items-center gap-2">
+                  <span
+                    class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                    :class="isCurrentProgram && week === currentWeek
+                      ? 'bg-primary text-white'
+                      : 'bg-surface-container-high text-on-surface-variant'"
+                  >{{ week }}</span>
+                  <span class="font-label font-bold text-sm text-primary">{{ phaseForWeek(week).name }}</span>
+                  <span v-if="isCurrentProgram && week === currentWeek"
+                    class="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                    Hoy
+                  </span>
+                </div>
+                <span class="text-xs text-outline">
+                  Sem {{ phaseForWeek(week).weeks[0] }}–{{ phaseForWeek(week).weeks[1] }}
+                </span>
+              </div>
+
+              <!-- Sets de esa semana -->
+              <div class="px-4 pb-3 space-y-1.5">
+                <div
+                  v-for="(set, i) in phaseForWeek(week).sets"
+                  :key="i"
+                  class="flex items-center gap-3 bg-surface-container rounded-xl px-3 py-2"
+                >
+                  <span class="material-symbols-outlined text-secondary text-sm flex-shrink-0">
+                    {{ setIcon(set.type) }}
+                  </span>
+                  <span class="font-label text-xs text-on-surface">
+                    {{ setLabel(set.type) }}:
+                    <strong>{{ set.reps }} reps</strong>
+                    · {{ set.contractSeconds }}s contracción
+                    · {{ set.restSeconds }}s descanso
+                    <span v-if="set.reverseSeconds"> · {{ set.reverseSeconds }}s reverse</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
       </section>
 
       <!-- Bloques de sesión de la fase 1 (preview) -->
@@ -217,18 +280,17 @@ import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useRoutinesStore, PROGRAMS } from '@/stores/routines'
-import { useSessionStore } from '@/stores/session'
 
 const route   = useRoute()
 const router  = useRouter()
 const { t }   = useI18n()
 const routines = useRoutinesStore()
-const session  = useSessionStore()
 
 const showConfirm = ref(false)
 const advanceMessage = ref('')
+const showWeekBreakdown = ref(false)
 
-const { selectedProgramId, currentWeek, activePhase } = storeToRefs(routines)
+const { selectedProgramId, currentWeek, activePhase, planWeekSessions } = storeToRefs(routines)
 
 // El programa que estamos viendo (desde la URL)
 const program = computed(() =>
@@ -243,9 +305,8 @@ const isCurrentProgram = computed(() =>
   selectedProgramId.value === route.params.id
 )
 
-// Progresión semanal
-const sessionsThisWeek = computed(() => routines.weekSessionCount(session.history))
-const canAdvance = computed(() => sessionsThisWeek.value >= routines.MIN_SESSIONS_TO_ADVANCE && currentWeek.value < 12)
+// Progresión semanal del plan
+const canAdvance = computed(() => currentWeek.value < 12)
 
 const weekProgressText = computed(() => {
   const remaining = 12 - currentWeek.value
@@ -253,11 +314,16 @@ const weekProgressText = computed(() => {
 })
 
 function handleAdvanceWeek() {
-  const result = routines.tryAdvanceWeek(session.history)
+  const result = routines.tryAdvanceWeek()
   if (result.advanced) {
     advanceMessage.value = t('program.advancedTo', { week: currentWeek.value })
     setTimeout(() => { advanceMessage.value = '' }, 3000)
   }
+}
+
+function phaseForWeek(week) {
+  const phases = program.value?.phases ?? []
+  return phases.find(p => week >= p.weeks[0] && week <= p.weeks[1]) ?? phases.at(-1)
 }
 
 function isPhaseActive(phase) {
@@ -314,4 +380,7 @@ function confirmAction() {
 <style scoped>
 .modal-enter-active, .modal-leave-active { transition: opacity 0.2s ease; }
 .modal-enter-from, .modal-leave-to { opacity: 0; }
+
+.breakdown-enter-active, .breakdown-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
+.breakdown-enter-from, .breakdown-leave-to { opacity: 0; transform: translateY(-8px); }
 </style>

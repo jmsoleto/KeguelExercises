@@ -230,62 +230,60 @@ export const useRoutinesStore = defineStore('routines', () => {
     }
   })
 
+  // Sesiones acumuladas en la semana actual del plan (independiente del calendario)
+  const planWeekSessions = ref(Number(localStorage.getItem('keguel_plan_week_sessions')) || 0)
+
+  // Sesiones de entrenamiento necesarias para completar una semana del plan
+  const MIN_SESSIONS_TO_ADVANCE = 5
+
   function selectProgram(id) {
     selectedProgramId.value = id
     currentWeek.value       = 1
     activeSetIndex.value    = 0
+    planWeekSessions.value  = 0
     localStorage.setItem('keguel_program', id)
     localStorage.setItem('keguel_week', '1')
+    localStorage.setItem('keguel_plan_week_sessions', '0')
   }
 
   function resetProgram() {
     selectedProgramId.value = null
     currentWeek.value       = 1
     activeSetIndex.value    = 0
+    planWeekSessions.value  = 0
     localStorage.removeItem('keguel_program')
     localStorage.setItem('keguel_week', '1')
+    localStorage.removeItem('keguel_plan_week_sessions')
   }
-
-  // Mínimo de sesiones por semana para poder avanzar
-  const MIN_SESSIONS_TO_ADVANCE = 2
-
-  // Cuenta las sesiones de la semana actual
-  function weekSessionCount(history) {
-    const now    = new Date()
-    const monday = new Date(now)
-    monday.setDate(now.getDate() - ((now.getDay() + 6) % 7))
-    monday.setHours(0, 0, 0, 0)
-    const sunday = new Date(monday)
-    sunday.setDate(monday.getDate() + 7)
-
-    return history.filter(s => {
-      const d = new Date(s.date)
-      return d >= monday && d < sunday
-    }).length
-  }
-
-  // Verifica si el usuario puede avanzar de semana
-  const canAdvanceWeek = computed(() => false) // se recalcula con history inyectada
 
   function advanceWeek() {
     if (currentWeek.value < 12) {
       currentWeek.value++
+      planWeekSessions.value = 0
       localStorage.setItem('keguel_week', String(currentWeek.value))
+      localStorage.setItem('keguel_plan_week_sessions', '0')
     }
   }
 
-  /**
-   * Intenta avanzar de semana si se cumple el mínimo de sesiones.
-   * @param {Array} history — historial de sesiones del session store
-   * @returns {{ advanced: boolean, sessionsThisWeek: number, required: number }}
-   */
-  function tryAdvanceWeek(history) {
-    const count = weekSessionCount(history)
-    if (count >= MIN_SESSIONS_TO_ADVANCE && currentWeek.value < 12) {
+  // Avance manual: siempre disponible si no se ha llegado a la semana 12
+  function tryAdvanceWeek() {
+    if (currentWeek.value < 12) {
       advanceWeek()
-      return { advanced: true, sessionsThisWeek: count, required: MIN_SESSIONS_TO_ADVANCE }
+      return { advanced: true }
     }
-    return { advanced: false, sessionsThisWeek: count, required: MIN_SESSIONS_TO_ADVANCE }
+    return { advanced: false }
+  }
+
+  // Registra una sesión completada y avanza automáticamente si se alcanza el mínimo
+  function incrementPlanSession() {
+    if (!selectedProgramId.value) return { advanced: false }
+    planWeekSessions.value++
+    localStorage.setItem('keguel_plan_week_sessions', String(planWeekSessions.value))
+    if (planWeekSessions.value >= MIN_SESSIONS_TO_ADVANCE && currentWeek.value < 12) {
+      advanceWeek()
+      return { advanced: true }
+    }
+    return { advanced: false }
   }
 
   function setActiveSet(index) {
@@ -296,7 +294,8 @@ export const useRoutinesStore = defineStore('routines', () => {
     PROGRAMS,
     selectedProgramId, selectedProgram, currentWeek,
     activePhase, activeSet, activeSetIndex, activeRoutineConfig,
-    selectProgram, resetProgram, advanceWeek, tryAdvanceWeek,
-    setActiveSet, MIN_SESSIONS_TO_ADVANCE, weekSessionCount,
+    planWeekSessions, MIN_SESSIONS_TO_ADVANCE,
+    selectProgram, resetProgram, advanceWeek, tryAdvanceWeek, incrementPlanSession,
+    setActiveSet,
   }
 })

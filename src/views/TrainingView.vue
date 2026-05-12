@@ -44,84 +44,105 @@
             <div class="absolute inset-0 bg-primary opacity-[0.03] rounded-3xl -rotate-1 scale-[1.02] transition-transform group-hover:rotate-0" />
             <div class="relative bg-surface-container-lowest rounded-3xl p-8 shadow-[0_32px_32px_-4px_rgba(17,29,35,0.06)] space-y-8">
 
-              <!-- Header tarjeta -->
-              <div class="flex justify-between items-start">
-                <div class="space-y-1">
-                  <h2 class="font-headline font-bold text-2xl text-primary">
-                    {{ activeProgram ? activeProgram.name : $t('training.pelvicActivation') }}
-                  </h2>
-                  <p class="text-on-surface-variant text-sm">
-                    {{ activePhase ? activePhase.name : $t('training.noActiveProgram') }}
-                  </p>
-                </div>
-                <div class="bg-tertiary-fixed-dim/20 text-tertiary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                  {{ routineLevel }}
-                </div>
-              </div>
+              <!-- ── CON PLAN ACTIVO ── -->
+              <template v-if="hasProgram">
 
-              <!-- Tip de la fase si hay programa -->
-              <div v-if="activePhase" class="bg-tertiary/5 rounded-xl p-4 border-l-2 border-tertiary flex gap-3">
-                <span class="material-symbols-outlined text-tertiary text-base flex-shrink-0">tips_and_updates</span>
-                <p class="text-xs leading-relaxed text-on-surface-variant">{{ activePhase.tip }}</p>
-              </div>
-
-              <!-- Imagen / visual -->
-              <div class="w-full aspect-[16/10] bg-surface-container-low rounded-2xl flex items-center justify-center overflow-hidden relative">
-                <div class="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent" />
-                <!-- Placeholder visual con icono -->
-                <div class="flex flex-col items-center gap-3 text-primary/30">
-                  <span class="material-symbols-outlined text-7xl">self_improvement</span>
-                </div>
-                <div class="absolute bottom-4 right-4">
-                  <div class="bg-surface/80 bg-glass px-3 py-1.5 rounded-xl flex items-center gap-2">
-                    <span class="material-symbols-outlined text-sm text-primary">timer</span>
-                    <span class="text-xs font-bold text-primary">{{ totalMinutes }} {{ $t('training.min') }}</span>
+                <!-- Header tarjeta -->
+                <div class="flex justify-between items-start">
+                  <div class="space-y-1">
+                    <h2 class="font-headline font-bold text-2xl text-primary">{{ activeProgram.name }}</h2>
+                    <p class="text-on-surface-variant text-sm">{{ activePhase?.name }}</p>
+                  </div>
+                  <div class="bg-tertiary-fixed-dim/20 text-tertiary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                    {{ routineLevel }}
                   </div>
                 </div>
-              </div>
 
-              <!-- Stats grid -->
-              <div class="grid grid-cols-2 gap-4">
-                <div class="bg-surface-container-high rounded-2xl p-4 flex flex-col gap-1">
-                  <span class="text-[10px] text-on-secondary-container uppercase tracking-wider font-semibold">{{ $t('training.intensity') }}</span>
-                  <div class="flex gap-1 mt-1">
-                    <div
-                      v-for="i in 3" :key="i"
-                      class="h-1.5 w-6 rounded-full"
-                      :class="i <= intensityLevel ? 'bg-primary' : 'bg-outline-variant/30'"
-                    />
+                <!-- Tip de la fase -->
+                <div v-if="activePhase?.tip" class="bg-tertiary/5 rounded-xl p-4 border-l-2 border-tertiary flex gap-3">
+                  <span class="material-symbols-outlined text-tertiary text-base flex-shrink-0">tips_and_updates</span>
+                  <p class="text-xs leading-relaxed text-on-surface-variant">{{ activePhase.tip }}</p>
+                </div>
+
+                <!-- Visual -->
+                <div class="w-full aspect-[16/10] bg-surface-container-low rounded-2xl flex items-center justify-center overflow-hidden relative">
+                  <div class="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent" />
+                  <div class="flex flex-col items-center gap-3 text-primary/30">
+                    <span class="material-symbols-outlined text-7xl">self_improvement</span>
+                  </div>
+                  <div class="absolute bottom-4 right-4">
+                    <div class="bg-surface/80 bg-glass px-3 py-1.5 rounded-xl flex items-center gap-2">
+                      <span class="material-symbols-outlined text-sm text-primary">timer</span>
+                      <span class="text-xs font-bold text-primary">{{ totalMinutes }} {{ $t('training.min') }}</span>
+                    </div>
                   </div>
                 </div>
-                <div class="bg-surface-container-high rounded-2xl p-4 flex flex-col gap-1">
-                  <span class="text-[10px] text-on-secondary-container uppercase tracking-wider font-semibold">{{ $t('training.reps') }}</span>
-                  <span class="text-lg font-headline font-bold text-primary">
-                    {{ routine.reps }} × {{ routine.contractSeconds }}s
-                  </span>
-                </div>
-              </div>
 
-              <!-- Ir a programa -->
-              <RouterLink to="/program">
-                <button class="w-full flex items-center justify-between px-4 py-3 rounded-xl
-                               bg-surface-container text-on-surface-variant text-sm font-label
-                               active:scale-[0.98] transition-transform mb-1">
-                  <span class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-base">{{ hasProgram ? 'route' : 'add_circle' }}</span>
-                    {{ hasProgram ? $t('training.viewFullProgram') : $t('training.chooseAProgram') }}
-                  </span>
-                  <span class="material-symbols-outlined text-base">chevron_right</span>
+                <!-- Stats grid -->
+                <div class="grid grid-cols-2 gap-4">
+                  <div class="bg-surface-container-high rounded-2xl p-4 flex flex-col gap-1">
+                    <span class="text-[10px] text-on-secondary-container uppercase tracking-wider font-semibold">{{ $t('training.intensity') }}</span>
+                    <div class="flex gap-1 mt-1">
+                      <div
+                        v-for="i in 3" :key="i"
+                        class="h-1.5 w-6 rounded-full"
+                        :class="i <= intensityLevel ? 'bg-primary' : 'bg-outline-variant/30'"
+                      />
+                    </div>
+                  </div>
+                  <div class="bg-surface-container-high rounded-2xl p-4 flex flex-col gap-1">
+                    <span class="text-[10px] text-on-secondary-container uppercase tracking-wider font-semibold">{{ $t('training.reps') }}</span>
+                    <span class="text-lg font-headline font-bold text-primary">
+                      {{ routine.reps }} × {{ routine.contractSeconds }}s
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Ver programa -->
+                <RouterLink to="/program">
+                  <button class="w-full flex items-center justify-between px-4 py-3 rounded-xl
+                                 bg-surface-container text-on-surface-variant text-sm font-label
+                                 active:scale-[0.98] transition-transform mb-1">
+                    <span class="flex items-center gap-2">
+                      <span class="material-symbols-outlined text-base">route</span>
+                      {{ $t('training.viewFullProgram') }}
+                    </span>
+                    <span class="material-symbols-outlined text-base">chevron_right</span>
+                  </button>
+                </RouterLink>
+
+                <!-- CTA: comenzar -->
+                <button
+                  @click="startSession"
+                  class="w-full bg-gradient-to-br from-primary to-primary-container text-white
+                         py-5 rounded-xl font-headline font-bold text-lg shadow-lg
+                         active:scale-[0.98] transition-all hover:shadow-primary/20"
+                >
+                  {{ $t('training.startSession') }}
                 </button>
-              </RouterLink>
 
-              <!-- CTA principal -->
-              <button
-                @click="startSession"
-                class="w-full bg-gradient-to-br from-primary to-primary-container text-white
-                       py-5 rounded-xl font-headline font-bold text-lg shadow-lg
-                       active:scale-[0.98] transition-all hover:shadow-primary/20"
-              >
-                {{ $t('training.startSession') }}
-              </button>
+              </template>
+
+              <!-- ── SIN PLAN ACTIVO ── -->
+              <template v-else>
+                <div class="flex flex-col items-center gap-6 py-6 text-center">
+                  <div class="w-20 h-20 rounded-full bg-surface-container-high flex items-center justify-center">
+                    <span class="material-symbols-outlined text-4xl text-on-surface-variant/40">fitness_center</span>
+                  </div>
+                  <div class="space-y-2">
+                    <h2 class="font-headline font-bold text-xl text-primary">{{ $t('training.noPlanTitle') }}</h2>
+                    <p class="text-sm text-on-surface-variant leading-relaxed">{{ $t('training.noPlanBody') }}</p>
+                  </div>
+                  <RouterLink to="/program" class="w-full">
+                    <button class="w-full bg-gradient-to-br from-primary to-primary-container text-white
+                                   py-5 rounded-xl font-headline font-bold text-lg shadow-lg
+                                   active:scale-[0.98] transition-all">
+                      {{ $t('training.choosePlan') }}
+                    </button>
+                  </RouterLink>
+                </div>
+              </template>
+
             </div>
           </section>
 
@@ -131,21 +152,7 @@
               <h3 class="font-headline font-bold text-xl text-primary">{{ $t('training.consistency') }}</h3>
               <span class="text-xs text-on-surface-variant">{{ streakText }}</span>
             </div>
-            <div class="bg-surface-container-low rounded-3xl p-6">
-              <div class="flex gap-2.5 items-end h-16 w-full">
-                <div
-                  v-for="(active, i) in weekActivity"
-                  :key="i"
-                  class="flex-1 rounded-full transition-all duration-700"
-                  :class="active ? 'bg-primary' : 'bg-outline-variant/20'"
-                  :style="{ height: active ? `${50 + Math.random() * 50}%` : '25%',
-                             opacity: active ? 1 : 1 }"
-                />
-              </div>
-              <div class="flex justify-between mt-3 text-[10px] font-label font-bold text-on-surface-variant uppercase tracking-widest px-0.5">
-                <span v-for="(d, i) in dayLabels" :key="d" :class="i === todayIndex ? 'text-primary' : ''">{{ d }}</span>
-              </div>
-            </div>
+            <WeeklyChart />
           </section>
 
           <!-- Tip del día -->
@@ -162,6 +169,26 @@
           </section>
 
         </main>
+      </div>
+    </Transition>
+
+    <!-- ═══════════════════════════════════════
+         CUENTA ATRÁS
+    ════════════════════════════════════════ -->
+    <Transition name="countdown-fade">
+      <div
+        v-if="showCountdown"
+        class="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center select-none"
+      >
+        <p class="text-on-surface-variant font-label text-sm uppercase tracking-[0.3em] mb-12">
+          {{ $t('training.getReady') }}
+        </p>
+        <div
+          :key="countdownKey"
+          class="countdown-number font-headline font-black text-primary leading-none"
+        >
+          {{ countdownValue }}
+        </div>
       </div>
     </Transition>
 
@@ -261,6 +288,20 @@
             </button>
           </div>
 
+          <!-- ─── BARRAS DE PROGRESO DE REPS ─── -->
+          <div class="absolute bottom-8 left-6 right-6 flex gap-1.5">
+            <div
+              v-for="i in session.totalReps"
+              :key="i"
+              class="rep-bar-track flex-1 h-1.5 rounded-full bg-surface-container-high overflow-hidden"
+            >
+              <div
+                class="h-full rounded-full bg-primary rep-bar-fill"
+                :style="{ width: repFillPct(i - 1) + '%' }"
+              />
+            </div>
+          </div>
+
           <!-- ─── OVERLAY MODO PRIVACIDAD ─── -->
           <Transition name="privacy">
             <div
@@ -301,6 +342,7 @@ import { useRoutinesStore, PROGRAMS } from '@/stores/routines'
 import { useSoundService } from '@/stores/sound'
 import { useHapticsService } from '@/stores/haptics'
 import { useProfileStore } from '@/stores/profile'
+import WeeklyChart from '@/components/WeeklyChart.vue'
 
 const router   = useRouter()
 const { t }    = useI18n()
@@ -310,11 +352,14 @@ const profile  = useProfileStore()
 const sound    = useSoundService()
 const haptics  = useHapticsService()
 
-const sessionStarted = ref(false)
-const privacyMode    = ref(false)
+const sessionStarted  = ref(false)
+const privacyMode     = ref(false)
+const showCountdown   = ref(false)
+const countdownValue  = ref(5)
+const countdownKey    = ref(0)
 
 // storeToRefs garantiza reactividad entre vistas
-const { selectedProgram: activeProgram, currentWeek, activePhase } = storeToRefs(routines)
+const { selectedProgram: activeProgram, currentWeek, activePhase, planWeekSessions } = storeToRefs(routines)
 const hasProgram = computed(() => !!activeProgram.value)
 
 // Configuración del timer — reconstruida desde refs primitivos del store
@@ -347,16 +392,31 @@ const intensityLevel = computed(() => {
   return 3
 })
 
-const routineLevel = computed(() => {
-  if (!activeProgram.value) return t('training.freeSession')
-  return `${t('training.week')} ${currentWeek.value} · ${activePhase.value?.name ?? ''}`
-})
+const currentDay   = computed(() => planWeekSessions.value + 1)
+const routineLevel = computed(() =>
+  `${t('training.week')} ${currentWeek.value} · ${t('training.day')} ${currentDay.value}/${routines.MIN_SESSIONS_TO_ADVANCE}`
+)
 
 const totalMinutes = computed(() => {
   const r = routine.value
   const repDur = r.contractSeconds + r.restSeconds + (r.reverseSeconds ? r.reverseSeconds + r.restSeconds : 0)
   return Math.ceil(r.reps * repDur / 60)
 })
+
+// Duración de una rep completa (segundos)
+// Progreso (0-100) de cada barra de rep.
+// Solo avanza durante la fase de contracción; en rest/reverse se mantiene al 100%.
+function repFillPct(i) {
+  if (!session.isActive || session.phase === 'ready') return 0
+  if (i < session.currentRep) return 100
+  if (i > session.currentRep) return 0
+  if (session.phase === 'contract') {
+    const elapsed = session.contractDuration - session.phaseTimeLeft
+    return Math.min(100, Math.max(0, (elapsed / session.contractDuration) * 100))
+  }
+  // rest o reverse: contracción ya completada, barra llena
+  return 100
+}
 
 // Timer
 const phase      = computed(() => session.phase)
@@ -432,9 +492,6 @@ const dashOffset = computed(() => {
 
 // Consistencia
 const weekActivity = computed(() => session.weekActivity)
-const dayKeys      = ['days.mon', 'days.tue', 'days.wed', 'days.thu', 'days.fri', 'days.sat', 'days.sun']
-const dayLabels    = computed(() => dayKeys.map(k => t(k)))
-const todayIndex   = computed(() => (new Date().getDay() + 6) % 7)
 const weekCount    = computed(() => weekActivity.value.filter(Boolean).length)
 const streakText   = computed(() => {
   const n = weekCount.value
@@ -442,8 +499,30 @@ const streakText   = computed(() => {
 })
 
 function startSession() {
-  session.startSession(routine.value)
-  sessionStarted.value = true
+  countdownValue.value = 5
+  countdownKey.value++
+  showCountdown.value = true
+  sound.playTick()
+  haptics.tick()
+  scheduleCountdown()
+}
+
+function scheduleCountdown() {
+  setTimeout(() => {
+    if (countdownValue.value > 1) {
+      countdownValue.value--
+      countdownKey.value++
+      sound.playTick()
+      haptics.tick()
+      scheduleCountdown()
+    } else {
+      // Activar el timer primero: se renderiza bajo el countdown aún opaco.
+      // El countdown desaparece 280 ms después, cuando la transición de entrada del timer ya completó.
+      session.startSession(routine.value)
+      sessionStarted.value = true
+      setTimeout(() => { showCountdown.value = false }, 280)
+    }
+  }, 1000)
 }
 
 function togglePause() {
@@ -474,6 +553,7 @@ watch(() => session.phaseTimeLeft, (t) => {
 // Navegar al resumen al completar — desactiva privacidad
 watch(() => session.isActive, (active, wasActive) => {
   if (wasActive && !active && session.lastSession) {
+    routines.incrementPlanSession()
     privacyMode.value = false
     sound.playComplete()
     haptics.complete()
@@ -536,6 +616,26 @@ watch(() => session.isActive, (active, wasActive) => {
   align-items: center;
   justify-content: center;
 }
+
+/* ── Barras de progreso de reps ── */
+.rep-bar-fill {
+  transition: width 1s linear;
+}
+
+/* ── Cuenta atrás ── */
+@keyframes countdown-pop {
+  0%   { opacity: 0;   transform: scale(0.25); }
+  18%  { opacity: 1;   transform: scale(1.05); }
+  60%  { opacity: 1;   transform: scale(1.0);  }
+  100% { opacity: 0;   transform: scale(1.55); }
+}
+.countdown-number {
+  font-size: min(55vw, 55vh);
+  animation: countdown-pop 0.92s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.countdown-fade-enter-active  { transition: opacity 0.25s ease; }
+.countdown-fade-leave-active  { transition: none; }
+.countdown-fade-enter-from    { opacity: 0; }
 
 /* ── Modo privacidad ── */
 .privacy-enter-active,
