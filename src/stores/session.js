@@ -17,7 +17,7 @@ export const TRANSITION_REST = 10
 export const useSessionStore = defineStore('session', () => {
   const isActive      = ref(false)
   const isPaused      = ref(false)
-  const phase         = ref('rest')      // 'contract' | 'rest' | 'reverse'
+  const phase         = ref('rest')      // 'contract' | 'rest' | 'reverse' | 'transition'
   const currentRep    = ref(0)           // rep dentro del bloque actual
   const elapsedTime   = ref(0)
   const phaseTimeLeft = ref(0)

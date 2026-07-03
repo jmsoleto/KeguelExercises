@@ -29,7 +29,7 @@ export const PROGRAMS = [
     accentColor: '#214337',
     description: 'Desarrolla el control bidireccional del músculo BC para retrasar la eyaculación y ganar presencia en el momento.',
     duration:    '12 semanas',
-    sessionsPerWeek: 2,
+    sessionsPerWeek: 5,
     benefit:     'Control eyaculatorio',
     phases: [
       {
@@ -84,7 +84,7 @@ export const PROGRAMS = [
     accentColor: '#114349',
     description: 'Contracciones sostenidas para mejorar el flujo sanguíneo y el bloqueo venoso. Efecto visible en 6-8 semanas.',
     duration:    '12 semanas',
-    sessionsPerWeek: 2,
+    sessionsPerWeek: 5,
     benefit:     'Función eréctil',
     phases: [
       {
@@ -137,7 +137,7 @@ export const PROGRAMS = [
     accentColor: '#48626e',
     description: 'Trabajo de fibras rápidas (fast-twitch) para aumentar la intensidad y duración del orgasmo. El más exigente.',
     duration:    '12 semanas',
-    sessionsPerWeek: 2,
+    sessionsPerWeek: 5,
     benefit:     'Intensidad del orgasmo',
     phases: [
       {
@@ -154,7 +154,7 @@ export const PROGRAMS = [
         weeks:       [3, 4],
         name:        'Potencia',
         description: 'Aumentamos el volumen de contracciones rápidas. El músculo BC empieza a desarrollar potencia real.',
-        tip:         'Descansa 60 segundos entre bloques. Este plan es el más intenso — no lo hagas más de dos veces por semana.',
+        tip:         'Descansa 60 segundos entre bloques. Este plan es el más intenso — respeta bien los descansos entre sesiones para que el músculo se recupere.',
         sets: [
           { type: 'slow', reps: 10, contractSeconds: 5, restSeconds: 4 },
           { type: 'fast', reps: 20, contractSeconds: 1, restSeconds: 1 },
@@ -184,6 +184,9 @@ export const PROGRAMS = [
   },
 ]
 
+// type de ejercicio → clave de etiqueta i18n (free.types.*), compartida con el modo libre
+const LABEL_KEY = { slow: 'long', fast: 'short', reverse: 'push' }
+
 // ─────────────────────────────────────────────
 
 export const useRoutinesStore = defineStore('routines', () => {
@@ -209,19 +212,35 @@ export const useRoutinesStore = defineStore('routines', () => {
     }) ?? selectedProgram.value.phases.at(-1)
   })
 
-  // El "set" que se usa como configuración del timer
-  // Por defecto el primer set de la fase activa
-  const activeSetIndex = ref(0)
-  const activeSet = computed(() =>
-    activePhase.value?.sets[activeSetIndex.value] ?? activePhase.value?.sets[0] ?? null
+  // Primer set de la fase activa (para resúmenes rápidos de la tarjeta)
+  const activeSet = computed(() => activePhase.value?.sets[0] ?? null)
+
+  // Nombre de la sesión guiada actual
+  const activeSessionName = computed(() =>
+    selectedProgram.value ? `${selectedProgram.value.name} · Semana ${currentWeek.value}` : ''
   )
 
-  // Para el store de sesión — interfaz compatible con el timer
+  // Todos los sets de la fase activa como bloques encadenables por el timer,
+  // igual que el modo libre. La sesión guiada entrena la fase completa.
+  const activePhaseBlocks = computed(() => {
+    const phase = activePhase.value
+    if (!phase) return []
+    return phase.sets.map(set => ({
+      type:            set.type,
+      reps:            set.reps,
+      contractSeconds: set.contractSeconds,
+      restSeconds:     set.restSeconds,
+      reverseSeconds:  set.reverseSeconds ?? 0,
+      labelKey:        LABEL_KEY[set.type],
+    }))
+  })
+
+  // Para el store de sesión — configuración compatible con el timer (primer set)
   const activeRoutineConfig = computed(() => {
     const set = activeSet.value
     if (!set) return null
     return {
-      name:            `${selectedProgram.value?.name} · Semana ${currentWeek.value}`,
+      name:            activeSessionName.value,
       reps:            set.reps,
       contractSeconds: set.contractSeconds,
       restSeconds:     set.restSeconds,
@@ -239,7 +258,6 @@ export const useRoutinesStore = defineStore('routines', () => {
   function selectProgram(id) {
     selectedProgramId.value = id
     currentWeek.value       = 1
-    activeSetIndex.value    = 0
     planWeekSessions.value  = 0
     localStorage.setItem('keguel_program', id)
     localStorage.setItem('keguel_week', '1')
@@ -249,7 +267,6 @@ export const useRoutinesStore = defineStore('routines', () => {
   function resetProgram() {
     selectedProgramId.value = null
     currentWeek.value       = 1
-    activeSetIndex.value    = 0
     planWeekSessions.value  = 0
     localStorage.removeItem('keguel_program')
     localStorage.setItem('keguel_week', '1')
@@ -286,16 +303,11 @@ export const useRoutinesStore = defineStore('routines', () => {
     return { advanced: false }
   }
 
-  function setActiveSet(index) {
-    activeSetIndex.value = index
-  }
-
   return {
     PROGRAMS,
     selectedProgramId, selectedProgram, currentWeek,
-    activePhase, activeSet, activeSetIndex, activeRoutineConfig,
+    activePhase, activeSet, activePhaseBlocks, activeSessionName, activeRoutineConfig,
     planWeekSessions, MIN_SESSIONS_TO_ADVANCE,
     selectProgram, resetProgram, advanceWeek, tryAdvanceWeek, incrementPlanSession,
-    setActiveSet,
   }
 })

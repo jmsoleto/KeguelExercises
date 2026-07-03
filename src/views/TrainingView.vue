@@ -235,14 +235,14 @@
             </span>
           </button>
 
-          <!-- Etiqueta del bloque (solo modo libre) -->
+          <!-- Etiqueta del bloque (sesiones de varios bloques: guiada o libre) -->
           <div
-            v-if="freeBlockLabel"
+            v-if="blockLabel"
             class="absolute top-5 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-0.5"
           >
-            <span class="font-headline font-bold text-sm text-primary">{{ freeBlockLabel.name }}</span>
+            <span class="font-headline font-bold text-sm text-primary">{{ blockLabel.name }}</span>
             <span class="text-[10px] font-label uppercase tracking-widest text-on-surface-variant">
-              {{ $t('free.blockOf', { n: freeBlockLabel.index, total: freeBlockLabel.total }) }}
+              {{ $t('free.blockOf', { n: blockLabel.index, total: blockLabel.total }) }}
             </span>
           </div>
 
@@ -363,7 +363,7 @@
               <div
                 class="w-4 h-4 rounded-full transition-colors duration-700 animate-pulse"
                 :class="{
-                  'bg-violet-400':  phase === 'ready' || phase === 'transition',
+                  'bg-violet-400':  phase === 'transition',
                   'bg-sky-400':     phase === 'contract',
                   'bg-emerald-400': phase === 'rest',
                   'bg-orange-400':  phase === 'reverse',
@@ -387,7 +387,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { useSessionStore } from '@/stores/session'
+import { useSessionStore, TRANSITION_REST } from '@/stores/session'
 import { useRoutinesStore, PROGRAMS } from '@/stores/routines'
 import { useSoundService } from '@/stores/sound'
 import { useHapticsService } from '@/stores/haptics'
@@ -413,27 +413,20 @@ const countdownKey    = ref(0)
 const { selectedProgram: activeProgram, currentWeek, activePhase, planWeekSessions } = storeToRefs(routines)
 const hasProgram = computed(() => !!activeProgram.value)
 
-// Configuración del timer — reconstruida desde refs primitivos del store
-const routine = computed(() => {
-  const phase = activePhase.value
-  if (!phase) return {
-    name: t('training.freeSession'), reps: 10, contractSeconds: 5,
-    restSeconds: 5, reverseSeconds: 0, type: 'slow',
-  }
-  const set = phase.sets[routines.activeSetIndex] ?? phase.sets[0]
-  if (!set) return {
-    name: t('training.freeSession'), reps: 10, contractSeconds: 5,
-    restSeconds: 5, reverseSeconds: 0, type: 'slow',
-  }
-  return {
-    name:            `${activeProgram.value.name} · Semana ${currentWeek.value}`,
-    reps:            set.reps,
-    contractSeconds: set.contractSeconds,
-    restSeconds:     set.restSeconds,
-    reverseSeconds:  set.reverseSeconds ?? 0,
-    type:            set.type,
-  }
+// Bloque por defecto cuando no hay fase activa (sesión libre de reserva)
+const DEFAULT_BLOCK = {
+  name: t('training.freeSession'), reps: 10, contractSeconds: 5,
+  restSeconds: 5, reverseSeconds: 0, type: 'slow',
+}
+
+// Todos los bloques que se entrenarán en la sesión guiada (fase completa)
+const sessionBlocks = computed(() => {
+  const blocks = routines.activePhaseBlocks
+  return blocks.length ? blocks : [DEFAULT_BLOCK]
 })
+
+// Primer bloque — resumen rápido para la tarjeta (intensidad, reps)
+const routine = computed(() => sessionBlocks.value[0] ?? DEFAULT_BLOCK)
 
 // Intensidad visual 1-3
 const intensityLevel = computed(() => {
@@ -448,17 +441,22 @@ const routineLevel = computed(() =>
   `${t('training.week')} ${currentWeek.value} · ${t('training.day')} ${currentDay.value}/${routines.MIN_SESSIONS_TO_ADVANCE}`
 )
 
+// Duración estimada de la sesión completa (suma de todos los bloques + transiciones)
 const totalMinutes = computed(() => {
-  const r = routine.value
-  const repDur = r.contractSeconds + r.restSeconds + (r.reverseSeconds ? r.reverseSeconds + r.restSeconds : 0)
-  return Math.ceil(r.reps * repDur / 60)
+  const secs = sessionBlocks.value.reduce((sum, b) => {
+    const rev = b.reverseSeconds ?? 0
+    const repDur = b.contractSeconds + b.restSeconds + (rev > 0 ? rev + b.restSeconds : 0)
+    return sum + b.reps * repDur
+  }, 0)
+  const transitions = Math.max(0, sessionBlocks.value.length - 1) * TRANSITION_REST
+  return Math.max(1, Math.ceil((secs + transitions) / 60))
 })
 
 // Duración de una rep completa (segundos)
 // Progreso (0-100) de cada barra de rep.
 // Solo avanza durante la fase de contracción; en rest/reverse se mantiene al 100%.
 function repFillPct(i) {
-  if (!session.isActive || session.phase === 'ready') return 0
+  if (!session.isActive) return 0
   if (i < session.currentRep) return 100
   if (i > session.currentRep) return 0
   if (session.phase === 'contract') {
@@ -472,15 +470,13 @@ function repFillPct(i) {
 // Timer
 const phase      = computed(() => session.phase)
 const phaseLabel = computed(() => ({
-  ready:      t('phases.ready'),
   contract:   t('phases.contract'),
   rest:       t('phases.rest'),
   reverse:    t('phases.reverse'),
   transition: t('phases.transition'),
-}[phase.value] ?? t('phases.ready')))
+}[phase.value] ?? t('phases.rest')))
 
 const phaseSubtext = computed(() => ({
-  ready:      '',
   contract:   t('phases.contractSub'),
   rest:       t('phases.restSub'),
   reverse:    t('phases.reverseSub'),
@@ -493,16 +489,9 @@ const showRepCounter = computed(() =>
 )
 
 // Colores del aura según fase
-// contract → azul (sky) | rest → verde (emerald) | reverse → naranja
+// contract → azul (sky) | rest → verde (emerald) | reverse → naranja | transition → violeta
 const auraColor = computed(() => {
   const map = {
-    ready: {
-      blob:     'bg-violet-400/30',
-      ripple:   'border-violet-500/20',
-      dot:      'bg-violet-500',
-      subtext:  'text-violet-900',
-      progress: 'bg-gradient-to-r from-violet-400 to-violet-600',
-    },
     contract: {
       blob:     'bg-sky-400/30',
       ripple:   'border-sky-500/20',
@@ -535,26 +524,6 @@ const auraColor = computed(() => {
   return map[phase.value] ?? map.rest
 })
 
-// Tiempo elapsed formateado MM:SS
-const elapsedFormatted = computed(() => {
-  const t = session.elapsedTime
-  const m = Math.floor(t / 60).toString().padStart(2, '0')
-  const s = (t % 60).toString().padStart(2, '0')
-  return `${m}:${s}`
-})
-
-const circumference = 2 * Math.PI * 88
-const phaseDuration = computed(() => {
-  const r = routine.value
-  if (phase.value === 'contract') return r.contractSeconds
-  if (phase.value === 'reverse')  return r.reverseSeconds
-  return r.restSeconds
-})
-const dashOffset = computed(() => {
-  const progress = session.phaseTimeLeft / (phaseDuration.value || 1)
-  return circumference * (1 - progress)
-})
-
 // Consistencia
 const weekActivity = computed(() => session.weekActivity)
 const weekCount    = computed(() => weekActivity.value.filter(Boolean).length)
@@ -563,9 +532,9 @@ const streakText   = computed(() => {
   return n === 0 ? t('training.noStreakYet') : t('training.daysThisWeek', { n }, n)
 })
 
-// Sesión guiada por el programa activo
+// Sesión guiada por el programa activo — entrena la fase completa (todos sus bloques)
 function startSession() {
-  runCountdown(() => session.startSession(routine.value))
+  runCountdown(() => session.startSession(sessionBlocks.value, { name: routines.activeSessionName }))
 }
 
 // Cuenta atrás genérica: ejecuta startFn al llegar a 0 y muestra el timer
@@ -611,10 +580,10 @@ const isFastBlock = computed(() => session.isActive && session.exerciseType === 
 // El latido del orbe solo en contracción/relajación, no en el descanso de cambio de ejercicio
 const fastBeat    = computed(() => isFastBlock.value && (session.phase === 'contract' || session.phase === 'rest'))
 
-// Etiqueta del bloque actual durante una sesión libre (tipo + posición)
-const freeBlockLabel = computed(() => {
+// Etiqueta del bloque actual en cualquier sesión de varios bloques (guiada o libre): tipo + posición
+const blockLabel = computed(() => {
   const b = session.currentBlock
-  if (!session.isFreeMode || !b) return null
+  if (!b || session.totalBlocks <= 1 || !b.labelKey) return null
   return { name: t(`free.types.${b.labelKey}`), index: session.currentBlockIndex + 1, total: session.totalBlocks }
 })
 

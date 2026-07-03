@@ -179,24 +179,35 @@ describe('useRoutinesStore', () => {
   })
 
   describe('activeSet', () => {
-    it('defaults to first set', () => {
+    it('defaults to first set of the phase', () => {
       const store = useRoutinesStore()
       store.selectProgram('control')
 
-      expect(store.activeSetIndex).toBe(0)
       expect(store.activeSet.type).toBe('slow')
     })
+  })
 
-    it('can switch to different set', () => {
+  describe('activePhaseBlocks', () => {
+    it('exposes every set of the phase as a chainable block', () => {
       const store = useRoutinesStore()
       store.selectProgram('control')
 
-      // Go to week 3 (Conciencia phase — has 2 sets)
+      // Semana 3 (fase Conciencia): slow + fast
       store.advanceWeek()
       store.advanceWeek()
 
-      store.setActiveSet(1)
-      expect(store.activeSet.type).toBe('fast')
+      const blocks = store.activePhaseBlocks
+      expect(blocks).toHaveLength(2)
+      expect(blocks.map(b => b.type)).toEqual(['slow', 'fast'])
+      // Cada bloque lleva labelKey i18n y reverseSeconds normalizado
+      expect(blocks[0].labelKey).toBe('long')
+      expect(blocks[1].labelKey).toBe('short')
+      expect(blocks[0].reverseSeconds).toBe(0)
+    })
+
+    it('is empty when no program is selected', () => {
+      const store = useRoutinesStore()
+      expect(store.activePhaseBlocks).toEqual([])
     })
   })
 

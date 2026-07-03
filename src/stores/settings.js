@@ -66,14 +66,8 @@ export const useSettingsStore = defineStore('settings', () => {
     darkMode.value = cycle[darkMode.value] ?? 'auto'
   }
 
-  const darkModeLabel = {
-    auto:  'Automático',
-    light: 'Claro',
-    dark:  'Oscuro',
-  }
-
   return {
     vibration, sound, darkMode, notifications,
-    cycleDarkMode, darkModeLabel, applyDarkMode,
+    cycleDarkMode, applyDarkMode,
   }
 })

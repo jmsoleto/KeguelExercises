@@ -147,7 +147,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
   return {
     enabled, reminderHour, reminderMin, permissionDenied,
-    requestPermission, scheduleDaily, cancelAll,
+    scheduleDaily,
     toggle, restoreAndReschedule,
   }
 })

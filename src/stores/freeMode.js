@@ -120,10 +120,6 @@ export const useFreeModeStore = defineStore('freeMode', () => {
     if (it && DURATION_OPTIONS[it.type].includes(duration)) it.duration = duration
   }
 
-  function reset() {
-    items.value = DEFAULT_ITEMS.map(makeItem)
-  }
-
   // ─── Construcción de la sesión ───────────────
   function buildBlocks() {
     return items.value
@@ -169,7 +165,7 @@ export const useFreeModeStore = defineStore('freeMode', () => {
 
   return {
     items,
-    addItem, removeItem, move, setReps, setDuration, reset,
+    addItem, removeItem, move, setReps, setDuration,
     buildBlocks,
     totalReps, totalBlocks, totalMinutes, isValid,
   }

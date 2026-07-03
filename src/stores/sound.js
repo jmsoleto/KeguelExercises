@@ -117,17 +117,6 @@ export function useSoundService() {
     return settings.sound
   }
 
-  function enable() {
-    const settings = useSettingsStore()
-    settings.sound = true
-    getContext() // user gesture context
-  }
-
-  function disable() {
-    const settings = useSettingsStore()
-    settings.sound = false
-  }
-
   function playPhaseChange(phase) {
     if (!isEnabled()) return
     try {
@@ -154,7 +143,6 @@ export function useSoundService() {
 
   return {
     get enabled() { return isEnabled() },
-    enable, disable,
     playPhaseChange, playComplete, playTick,
   }
 }
