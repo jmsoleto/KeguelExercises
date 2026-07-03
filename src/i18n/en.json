@@ -152,6 +152,7 @@
     "sessions": "Sessions",
     "account": "Account",
     "personalProfile": "Personal profile",
+    "changeUser": "Change user",
     "training": "Training",
     "dailyReminders": "Daily reminders",
     "permissionDenied": "Permission denied. Enable it in System Settings.",
@@ -189,6 +190,20 @@
     "fri": "F",
     "sat": "S",
     "sun": "S"
+  },
+  "welcome": {
+    "question": "Who's going to train?",
+    "subtitle": "The exercises adapt to you. Tap to choose.",
+    "male": "Man",
+    "female": "Woman",
+    "nameLabel": "Your name",
+    "namePlaceholder": "How should we call you?",
+    "start": "Get started"
+  },
+  "comingSoon": {
+    "title": "Coming soon",
+    "body": "We're preparing the exercise programs for you. They'll be here very soon!",
+    "changeUser": "Change user"
   },
   "onboarding": {
     "welcome": "Welcome to",

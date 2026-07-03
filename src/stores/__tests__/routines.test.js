@@ -24,6 +24,13 @@ describe('useRoutinesStore', () => {
       })
     })
 
+    it('every program is tagged male (female content not authored yet)', () => {
+      PROGRAMS.forEach(program => {
+        expect(program.sex).toBe('male')
+      })
+      expect(PROGRAMS.filter(p => p.sex === 'female')).toHaveLength(0)
+    })
+
     it('each phase has at least one set', () => {
       PROGRAMS.forEach(program => {
         program.phases.forEach(phase => {

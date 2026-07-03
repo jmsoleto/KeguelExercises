@@ -22,6 +22,7 @@ import { ref, computed } from 'vue'
 export const PROGRAMS = [
   {
     id:          'control',
+    sex:         'male',
     name:        'Control Total',
     tagline:     'Domina el momento',
     icon:        'tune',
@@ -77,6 +78,7 @@ export const PROGRAMS = [
 
   {
     id:          'erection',
+    sex:         'male',
     name:        'Erección Plena',
     tagline:     'Flujo y firmeza',
     icon:        'favorite',
@@ -130,6 +132,7 @@ export const PROGRAMS = [
 
   {
     id:          'intensity',
+    sex:         'male',
     name:        'Máxima Intensidad',
     tagline:     'Potencia explosiva',
     icon:        'bolt',

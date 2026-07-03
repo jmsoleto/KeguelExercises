@@ -16,7 +16,7 @@ import { useRoute } from 'vue-router'
 import BottomNav from '@/components/BottomNav.vue'
 
 const route = useRoute()
-const showNav = computed(() => !['training', 'summary', 'profile', 'onboarding', 'program-detail', 'free'].includes(route.name))
+const showNav = computed(() => !['training', 'summary', 'profile', 'onboarding', 'welcome', 'program-detail', 'free'].includes(route.name))
 </script>
 
 <style>

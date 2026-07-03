@@ -62,6 +62,17 @@
             </div>
             <span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">chevron_right</span>
           </div>
+          <div class="h-px bg-surface-container-high mx-5" />
+          <RouterLink
+            to="/welcome"
+            class="flex items-center justify-between p-5 hover:bg-surface-container-low transition-colors group"
+          >
+            <div class="flex items-center gap-4">
+              <span class="material-symbols-outlined text-secondary">manage_accounts</span>
+              <span class="font-body font-medium text-on-surface">{{ $t('profile.changeUser') }}</span>
+            </div>
+            <span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">chevron_right</span>
+          </RouterLink>
         </div>
       </section>
 

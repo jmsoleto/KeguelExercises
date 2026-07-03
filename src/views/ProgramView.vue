@@ -8,6 +8,9 @@
 
     <main class="max-w-lg mx-auto px-6 pt-2 space-y-6">
 
+      <ComingSoon v-if="isFemale" />
+
+      <template v-else>
       <p class="text-on-surface-variant text-sm">
         {{ $t('program.chooseDescription') }}
       </p>
@@ -15,7 +18,7 @@
       <!-- Lista de todos los programas -->
       <div class="space-y-5">
         <RouterLink
-          v-for="program in PROGRAMS"
+          v-for="program in visiblePrograms"
           :key="program.id"
           :to="`/program/${program.id}`"
           class="block bg-surface-container-lowest rounded-2xl p-6 shadow-sm
@@ -66,17 +69,26 @@
           </div>
         </RouterLink>
       </div>
+      </template>
 
     </main>
   </div>
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoutinesStore, PROGRAMS } from '@/stores/routines'
+import { useProfileStore } from '@/stores/profile'
+import ComingSoon from '@/components/ComingSoon.vue'
 
 const routines = useRoutinesStore()
+const profile  = useProfileStore()
 const { selectedProgramId } = storeToRefs(routines)
+
+const isFemale = computed(() => profile.sex === 'female')
+// Solo se muestran los programas del sexo del usuario (hoy solo existen masculinos)
+const visiblePrograms = computed(() => PROGRAMS.filter(p => p.sex === profile.sex))
 
 function isActive(programId) {
   return selectedProgramId.value === programId

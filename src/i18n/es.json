@@ -152,6 +152,7 @@
     "sessions": "Sesiones",
     "account": "Cuenta",
     "personalProfile": "Perfil personal",
+    "changeUser": "Cambiar de usuario",
     "training": "Entrenamiento",
     "dailyReminders": "Recordatorios diarios",
     "permissionDenied": "Permiso denegado. Actívalo en Ajustes del sistema.",
@@ -189,6 +190,20 @@
     "fri": "V",
     "sat": "S",
     "sun": "D"
+  },
+  "welcome": {
+    "question": "¿Quién va a entrenar?",
+    "subtitle": "Los ejercicios se adaptan a ti. Pulsa para elegir.",
+    "male": "Hombre",
+    "female": "Mujer",
+    "nameLabel": "Tu nombre",
+    "namePlaceholder": "¿Cómo quieres que te llamemos?",
+    "start": "Empezar"
+  },
+  "comingSoon": {
+    "title": "Próximamente",
+    "body": "Estamos preparando los programas de ejercicios para ti. ¡Estarán disponibles muy pronto!",
+    "changeUser": "Cambiar de usuario"
   },
   "onboarding": {
     "welcome": "Bienvenido a",

@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+import { useProfileStore } from '@/stores/profile'
 
 // Hash history es necesario para Capacitor (no hay servidor que sirva rutas)
 const router = createRouter({
@@ -8,6 +9,11 @@ const router = createRouter({
     {
       path: '/',
       redirect: '/training',
+    },
+    {
+      path: '/welcome',
+      name: 'welcome',
+      component: () => import('@/views/WelcomeView.vue'),
     },
     {
       path: '/onboarding',
@@ -52,10 +58,18 @@ const router = createRouter({
   ],
 })
 
-// Guard: redirigir a onboarding en primer uso
+// Guard de arranque: identidad (sexo) → onboarding → app
 router.beforeEach((to) => {
+  const profile = useProfileStore()
+
+  // 1) Sin identidad definida → pantalla de creación de usuario
+  if (!profile.hasIdentity && to.name !== 'welcome') {
+    return { name: 'welcome' }
+  }
+
+  // 2) Con identidad pero sin onboarding → carrusel (intacto)
   const onboarded = localStorage.getItem('keguel_onboarded')
-  if (!onboarded && to.name !== 'onboarding') {
+  if (profile.hasIdentity && !onboarded && to.name !== 'onboarding' && to.name !== 'welcome') {
     return { name: 'onboarding' }
   }
 })

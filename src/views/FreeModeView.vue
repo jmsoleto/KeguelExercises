@@ -14,6 +14,9 @@
 
     <main class="max-w-lg mx-auto px-6 pt-2 space-y-8">
 
+      <ComingSoon v-if="isFemale" />
+
+      <template v-else>
       <p class="text-on-surface-variant text-sm leading-relaxed">
         {{ $t('free.description') }}
       </p>
@@ -166,10 +169,11 @@
         </div>
       </section>
 
+      </template>
     </main>
 
     <!-- CTA fijo -->
-    <div class="fixed bottom-0 left-0 w-full z-50 px-6 pb-8 pb-safe bg-gradient-to-t from-background via-background/95 to-transparent pt-6">
+    <div v-if="!isFemale" class="fixed bottom-0 left-0 w-full z-50 px-6 pb-8 pb-safe bg-gradient-to-t from-background via-background/95 to-transparent pt-6">
       <div class="max-w-lg mx-auto">
         <button
           @click="start"
@@ -187,15 +191,21 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFreeModeStore, DURATION_OPTIONS } from '@/stores/freeMode'
 import { useSessionStore } from '@/stores/session'
+import { useProfileStore } from '@/stores/profile'
 import { useI18n } from 'vue-i18n'
+import ComingSoon from '@/components/ComingSoon.vue'
 
 const router  = useRouter()
 const free    = useFreeModeStore()
 const session = useSessionStore()
+const profile = useProfileStore()
 const { t }   = useI18n()
+
+const isFemale = computed(() => profile.sex === 'female')
 
 const TYPES = ['slow', 'fast', 'reverse']
 const LABEL_KEY = { slow: 'long', fast: 'short', reverse: 'push' }

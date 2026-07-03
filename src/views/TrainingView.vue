@@ -29,6 +29,9 @@
 
         <main class="pt-24 px-6 max-w-lg mx-auto space-y-10">
 
+          <ComingSoon v-if="isFemale" />
+
+          <template v-else>
           <!-- Hero editorial -->
           <section class="flex flex-col gap-1">
             <span class="text-secondary font-label text-xs uppercase tracking-widest font-semibold">
@@ -190,6 +193,7 @@
               </div>
             </div>
           </section>
+          </template>
 
         </main>
       </div>
@@ -394,6 +398,7 @@ import { useHapticsService } from '@/stores/haptics'
 import { useProfileStore } from '@/stores/profile'
 import WeeklyChart from '@/components/WeeklyChart.vue'
 import EffortChart from '@/components/EffortChart.vue'
+import ComingSoon from '@/components/ComingSoon.vue'
 
 const router   = useRouter()
 const { t }    = useI18n()
@@ -412,6 +417,9 @@ const countdownKey    = ref(0)
 // storeToRefs garantiza reactividad entre vistas
 const { selectedProgram: activeProgram, currentWeek, activePhase, planWeekSessions } = storeToRefs(routines)
 const hasProgram = computed(() => !!activeProgram.value)
+
+// El contenido de ejercicio femenino aún no existe → estado "Próximamente"
+const isFemale = computed(() => profile.sex === 'female')
 
 // Bloque por defecto cuando no hay fase activa (sesión libre de reserva)
 const DEFAULT_BLOCK = {
