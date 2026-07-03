@@ -153,6 +153,57 @@ describe('useSessionStore', () => {
     })
   })
 
+  describe('multi-block (free mode)', () => {
+    const blockA = { reps: 1, contractSeconds: 1, restSeconds: 1, reverseSeconds: 0, type: 'fast' }
+    const blockB = { reps: 1, contractSeconds: 2, restSeconds: 2, reverseSeconds: 0, type: 'slow' }
+
+    it('inserts a 10s transition rest between blocks', () => {
+      const store = useSessionStore()
+      store.startSession([blockA, blockB], { free: true, name: 'Libre' })
+
+      expect(store.isFreeMode).toBe(true)
+      expect(store.totalBlocks).toBe(2)
+      expect(store.currentBlockIndex).toBe(0)
+
+      // Bloque A: 1s contract + 1s rest → fin de bloque
+      vi.advanceTimersByTime(2000)
+
+      // Entra el descanso de cambio de ejercicio (10s), ya apuntando al bloque B
+      expect(store.phase).toBe('transition')
+      expect(store.phaseTimeLeft).toBe(10)
+      expect(store.currentBlockIndex).toBe(1)
+      expect(store.exerciseType).toBe('slow')
+
+      // Tras los 10s arranca el bloque B en contracción
+      vi.advanceTimersByTime(10000)
+      expect(store.phase).toBe('contract')
+      expect(store.phaseTimeLeft).toBe(2)
+    })
+
+    it('counts reps across all blocks and completes after the last', () => {
+      const store = useSessionStore()
+      store.startSession([blockA, blockB], { free: true, name: 'Libre' })
+
+      expect(store.grandTotalReps).toBe(2)
+
+      // A (2s) + transición (10s) + B (2s contract + 2s rest)
+      vi.advanceTimersByTime(2000 + 10000 + 4000)
+
+      expect(store.isActive).toBe(false)
+      expect(store.lastSession.reps).toBe(2)
+      expect(store.lastSession.totalReps).toBe(2)
+      expect(store.lastSession.accuracy).toBe(100)
+      expect(store.lastSession.free).toBe(true)
+    })
+
+    it('includes transitions in totalDuration', () => {
+      const store = useSessionStore()
+      store.startSession([blockA, blockB], { free: true })
+      // A: 1×(1+1)=2 ; B: 1×(2+2)=4 ; transición: 10 → 16
+      expect(store.totalDuration).toBe(16)
+    })
+  })
+
   describe('pause / resume / stop', () => {
     it('pauses and resumes the session', () => {
       const store = useSessionStore()

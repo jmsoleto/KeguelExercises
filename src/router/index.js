@@ -20,6 +20,11 @@ const router = createRouter({
       component: () => import('@/views/TrainingView.vue'),
     },
     {
+      path: '/free',
+      name: 'free',
+      component: () => import('@/views/FreeModeView.vue'),
+    },
+    {
       path: '/summary',
       name: 'summary',
       component: () => import('@/views/SummaryView.vue'),

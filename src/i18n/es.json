@@ -21,6 +21,7 @@
     "chooseAProgram": "Elegir programa",
     "startSession": "Comenzar sesión",
     "consistency": "Consistencia",
+    "effortTrend": "Esfuerzo",
     "noStreakYet": "Sin racha aún",
     "daysThisWeek": "{n} día esta semana | {n} días esta semana",
     "recoveryTip": "Consejo de recuperación",
@@ -44,14 +45,43 @@
     "noPlanBody": "Elige un programa de entrenamiento para poder comenzar tus sesiones.",
     "choosePlan": "Elegir plan"
   },
+  "free": {
+    "title": "Modo libre",
+    "cardSubtitle": "Configura tus propias repeticiones y tandas",
+    "description": "Define cuántas repeticiones y cuántas tandas quieres de cada tipo. Guardamos tu configuración para la próxima sesión.",
+    "sessionName": "Sesión libre",
+    "totalReps": "Reps",
+    "blocks": "Bloques",
+    "duration": "Duración",
+    "repsPerSet": "Repeticiones",
+    "holdDuration": "Duración",
+    "pushDuration": "Duración empuje",
+    "sequence": "Secuencia",
+    "addBlock": "Añadir bloque",
+    "empty": "Añade bloques para construir tu sesión.",
+    "blockOf": "Bloque {n}/{total}",
+    "start": "Comenzar sesión",
+    "types": {
+      "long": "Largas",
+      "short": "Cortas",
+      "push": "Empuje"
+    },
+    "hints": {
+      "long": "Contracciones lentas y sostenidas",
+      "short": "Contracciones explosivas cortas",
+      "push": "Reverse Kegel: empuja hacia afuera"
+    }
+  },
   "phases": {
     "contract": "Contrae",
     "rest": "Relaja",
     "reverse": "Empuja",
     "ready": "Preparado",
+    "transition": "Descanso",
     "contractSub": "Mantener",
     "restSub": "Respira",
-    "reverseSub": "Empuja afuera"
+    "reverseSub": "Empuja afuera",
+    "transitionSub": "Cambio de ejercicio"
   },
   "summary": {
     "title": "Resumen de Sesión",
@@ -72,6 +102,13 @@
     "medium": "Medio",
     "hard": "Duro",
     "intense": "Intenso"
+  },
+  "effortChart": {
+    "empty": "Valora el esfuerzo al terminar tus sesiones para ver tu evolución aquí.",
+    "neutral": "Registra el esfuerzo de tus sesiones para recibir recomendaciones.",
+    "low": "Tu esfuerzo ha sido bajo últimamente. Prueba a subir las repeticiones o añadir ejercicios para seguir progresando.",
+    "good": "Buen nivel de esfuerzo. Mantén este ritmo y sube poco a poco.",
+    "high": "¡Gran intensidad! Asegúrate de descansar lo suficiente entre sesiones."
   },
   "insights": {
     "title": "Progreso",

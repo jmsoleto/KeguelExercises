@@ -145,7 +145,7 @@ const weekPercent   = computed(() => {
 
 function finish() {
   if (selectedEffort.value !== null) {
-    session.completeSession(selectedEffort.value)
+    session.setSessionEffort(selectedEffort.value)
   }
   router.push('/training')
 }

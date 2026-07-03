@@ -146,6 +146,21 @@
             </div>
           </section>
 
+          <!-- Modo libre -->
+          <RouterLink to="/free" class="block">
+            <div class="relative bg-surface-container-lowest rounded-3xl p-5 shadow-sm
+                        active:scale-[0.98] transition-transform flex items-center gap-4">
+              <div class="w-12 h-12 rounded-2xl bg-secondary-container text-on-secondary-container flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">tune</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-headline font-bold text-base text-primary">{{ $t('free.title') }}</h3>
+                <p class="text-xs text-on-surface-variant leading-snug">{{ $t('free.cardSubtitle') }}</p>
+              </div>
+              <span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+            </div>
+          </RouterLink>
+
           <!-- Consistencia semanal -->
           <section class="space-y-4">
             <div class="flex justify-between items-end px-2">
@@ -153,6 +168,14 @@
               <span class="text-xs text-on-surface-variant">{{ streakText }}</span>
             </div>
             <WeeklyChart />
+          </section>
+
+          <!-- Esfuerzo en el tiempo -->
+          <section class="space-y-4">
+            <div class="flex justify-between items-end px-2">
+              <h3 class="font-headline font-bold text-xl text-primary">{{ $t('training.effortTrend') }}</h3>
+            </div>
+            <EffortChart />
           </section>
 
           <!-- Tip del día -->
@@ -212,6 +235,17 @@
             </span>
           </button>
 
+          <!-- Etiqueta del bloque (solo modo libre) -->
+          <div
+            v-if="freeBlockLabel"
+            class="absolute top-5 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-0.5"
+          >
+            <span class="font-headline font-bold text-sm text-primary">{{ freeBlockLabel.name }}</span>
+            <span class="text-[10px] font-label uppercase tracking-widest text-on-surface-variant">
+              {{ $t('free.blockOf', { n: freeBlockLabel.index, total: freeBlockLabel.total }) }}
+            </span>
+          </div>
+
           <!-- ─── AURA CENTRAL ─── -->
           <div class="relative z-10 flex flex-col items-center justify-center w-full max-w-lg aspect-square">
             <div class="absolute inset-0 flex items-center justify-center">
@@ -233,7 +267,12 @@
               />
 
               <!-- Orbe central (cristal) — clip-path fuerza el círculo -->
-              <div class="orb-circle transition-all duration-700">
+              <!-- En bloques rápidos late con la fase (contrae/relaja) en vez de mostrar un contador que se atropella -->
+              <div
+                class="orb-circle"
+                :class="fastBeat ? 'orb-beat' : 'transition-all duration-700'"
+                :style="fastBeat ? { transform: phase === 'contract' ? 'scale(1.06)' : 'scale(0.9)' } : null"
+              >
                 <div class="orb-content">
                   <p class="text-primary font-headline text-4xl font-extrabold tracking-tight mb-1" aria-live="polite">
                     {{ phaseLabel }}
@@ -248,7 +287,18 @@
                       {{ phaseSubtext }}
                     </p>
                   </div>
-                  <div class="mt-4 flex flex-col items-center">
+
+                  <!-- Bloque rápido: contador de repeticiones (sin segundos) -->
+                  <div v-if="showRepCounter" class="mt-4 flex flex-col items-center">
+                    <span class="text-xs font-bold text-primary/50 uppercase tracking-[0.3em] mb-1">{{ $t('training.repsDuring') }}</span>
+                    <div class="flex items-baseline gap-1 leading-none">
+                      <span class="font-headline font-black text-5xl text-primary tabular-nums">{{ Math.min(session.currentRep + 1, session.totalReps) }}</span>
+                      <span class="font-headline font-bold text-2xl text-primary/40 tabular-nums">/ {{ session.totalReps }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Resto de bloques: cuenta atrás en segundos -->
+                  <div v-else class="mt-4 flex flex-col items-center">
                     <span class="text-xs font-bold text-primary/50 uppercase tracking-[0.3em] mb-1">{{ $t('training.seconds') }}</span>
                     <span class="font-headline font-black text-5xl text-primary leading-none" aria-live="off" :aria-label="`${session.phaseTimeLeft} segundos restantes`">
                       {{ session.phaseTimeLeft }}
@@ -313,7 +363,7 @@
               <div
                 class="w-4 h-4 rounded-full transition-colors duration-700 animate-pulse"
                 :class="{
-                  'bg-violet-400':  phase === 'ready',
+                  'bg-violet-400':  phase === 'ready' || phase === 'transition',
                   'bg-sky-400':     phase === 'contract',
                   'bg-emerald-400': phase === 'rest',
                   'bg-orange-400':  phase === 'reverse',
@@ -333,7 +383,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -343,6 +393,7 @@ import { useSoundService } from '@/stores/sound'
 import { useHapticsService } from '@/stores/haptics'
 import { useProfileStore } from '@/stores/profile'
 import WeeklyChart from '@/components/WeeklyChart.vue'
+import EffortChart from '@/components/EffortChart.vue'
 
 const router   = useRouter()
 const { t }    = useI18n()
@@ -421,18 +472,25 @@ function repFillPct(i) {
 // Timer
 const phase      = computed(() => session.phase)
 const phaseLabel = computed(() => ({
-  ready:    t('phases.ready'),
-  contract: t('phases.contract'),
-  rest:     t('phases.rest'),
-  reverse:  t('phases.reverse'),
+  ready:      t('phases.ready'),
+  contract:   t('phases.contract'),
+  rest:       t('phases.rest'),
+  reverse:    t('phases.reverse'),
+  transition: t('phases.transition'),
 }[phase.value] ?? t('phases.ready')))
 
 const phaseSubtext = computed(() => ({
-  ready:    '',
-  contract: t('phases.contractSub'),
-  rest:     t('phases.restSub'),
-  reverse:  t('phases.reverseSub'),
+  ready:      '',
+  contract:   t('phases.contractSub'),
+  rest:       t('phases.restSub'),
+  reverse:    t('phases.reverseSub'),
+  transition: t('phases.transitionSub'),
 }[phase.value] ?? ''))
+
+// Mostrar contador de reps (bloque rápido) salvo en el descanso de cambio de ejercicio
+const showRepCounter = computed(() =>
+  isFastBlock.value && (phase.value === 'contract' || phase.value === 'rest')
+)
 
 // Colores del aura según fase
 // contract → azul (sky) | rest → verde (emerald) | reverse → naranja
@@ -466,6 +524,13 @@ const auraColor = computed(() => {
       subtext:  'text-orange-900',
       progress: 'bg-gradient-to-r from-orange-400 to-orange-500',
     },
+    transition: {
+      blob:     'bg-violet-400/30',
+      ripple:   'border-violet-500/20',
+      dot:      'bg-violet-500',
+      subtext:  'text-violet-900',
+      progress: 'bg-gradient-to-r from-violet-400 to-violet-600',
+    },
   }
   return map[phase.value] ?? map.rest
 })
@@ -498,32 +563,60 @@ const streakText   = computed(() => {
   return n === 0 ? t('training.noStreakYet') : t('training.daysThisWeek', { n }, n)
 })
 
+// Sesión guiada por el programa activo
 function startSession() {
+  runCountdown(() => session.startSession(routine.value))
+}
+
+// Cuenta atrás genérica: ejecuta startFn al llegar a 0 y muestra el timer
+function runCountdown(startFn) {
   countdownValue.value = 5
   countdownKey.value++
   showCountdown.value = true
   sound.playTick()
   haptics.tick()
-  scheduleCountdown()
+  _tickCountdown(startFn)
 }
 
-function scheduleCountdown() {
+function _tickCountdown(startFn) {
   setTimeout(() => {
     if (countdownValue.value > 1) {
       countdownValue.value--
       countdownKey.value++
       sound.playTick()
       haptics.tick()
-      scheduleCountdown()
+      _tickCountdown(startFn)
     } else {
       // Activar el timer primero: se renderiza bajo el countdown aún opaco.
       // El countdown desaparece 280 ms después, cuando la transición de entrada del timer ya completó.
-      session.startSession(routine.value)
+      startFn()
       sessionStarted.value = true
       setTimeout(() => { showCountdown.value = false }, 280)
     }
   }, 1000)
 }
+
+// El modo libre prepara los bloques y navega aquí; arrancamos la sesión.
+onMounted(() => {
+  const pending = session.consumePendingFree()
+  if (pending) {
+    runCountdown(() => session.startSession(pending.blocks, { free: true, name: pending.name }))
+  } else if (session.isActive) {
+    sessionStarted.value = true
+  }
+})
+
+// Bloque de contracciones rápidas: cambiamos la visualización (late, sin contador de segundos)
+const isFastBlock = computed(() => session.isActive && session.exerciseType === 'fast')
+// El latido del orbe solo en contracción/relajación, no en el descanso de cambio de ejercicio
+const fastBeat    = computed(() => isFastBlock.value && (session.phase === 'contract' || session.phase === 'rest'))
+
+// Etiqueta del bloque actual durante una sesión libre (tipo + posición)
+const freeBlockLabel = computed(() => {
+  const b = session.currentBlock
+  if (!session.isFreeMode || !b) return null
+  return { name: t(`free.types.${b.labelKey}`), index: session.currentBlockIndex + 1, total: session.totalBlocks }
+})
 
 function togglePause() {
   session.isPaused ? session.resumeSession() : session.pauseSession()
@@ -553,7 +646,7 @@ watch(() => session.phaseTimeLeft, (t) => {
 // Navegar al resumen al completar — desactiva privacidad
 watch(() => session.isActive, (active, wasActive) => {
   if (wasActive && !active && session.lastSession) {
-    routines.incrementPlanSession()
+    if (!session.isFreeMode) routines.incrementPlanSession()
     privacyMode.value = false
     sound.playComplete()
     haptics.complete()
@@ -615,6 +708,12 @@ watch(() => session.isActive, (active, wasActive) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+/* Bloques rápidos: el orbe late siguiendo el ritmo contrae/relaja */
+.orb-beat {
+  transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.3s ease, box-shadow 0.16s ease;
 }
 
 /* ── Barras de progreso de reps ── */

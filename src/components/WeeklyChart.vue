@@ -41,10 +41,11 @@
           :style="{ height: barHeight(day.count) }"
         />
       </div>
-      <div class="flex justify-between mt-3 text-[10px] font-label font-bold uppercase tracking-widest px-0.5">
+      <div class="flex gap-2.5 mt-3 text-[10px] font-label font-bold uppercase tracking-widest">
         <span
           v-for="(day, i) in weekDays"
           :key="i"
+          class="flex-1 text-center"
           :class="day.isToday ? 'text-primary' : 'text-on-surface-variant'"
         >{{ day.label }}</span>
       </div>
@@ -73,6 +74,15 @@ const displayedMonday = computed(() => {
 
 const DAY_KEYS = ['days.mon', 'days.tue', 'days.wed', 'days.thu', 'days.fri', 'days.sat', 'days.sun']
 
+// Fecha en formato YYYY-MM-DD según la zona horaria local (evita el
+// desfase de un día que provoca toISOString() al convertir a UTC).
+function toLocalDateStr(d) {
+  const y  = d.getFullYear()
+  const m  = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${dd}`
+}
+
 const weekDays = computed(() => {
   const monday = displayedMonday.value
   const today = new Date()
@@ -81,8 +91,8 @@ const weekDays = computed(() => {
   return Array.from({ length: 7 }, (_, i) => {
     const date = new Date(monday)
     date.setDate(monday.getDate() + i)
-    const dateStr = date.toISOString().slice(0, 10)
-    const count = session.history.filter(s => s.date.slice(0, 10) === dateStr).length
+    const dateStr = toLocalDateStr(date)
+    const count = session.history.filter(s => toLocalDateStr(new Date(s.date)) === dateStr).length
     return {
       label:   t(DAY_KEYS[i]),
       count,

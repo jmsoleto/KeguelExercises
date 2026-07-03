@@ -147,30 +147,34 @@ describe('useRoutinesStore', () => {
   })
 
   describe('tryAdvanceWeek', () => {
-    it('does not advance without enough sessions', () => {
+    it('advances manually while below week 12', () => {
       const store = useRoutinesStore()
       store.selectProgram('control')
 
-      const result = store.tryAdvanceWeek([])
-      expect(result.advanced).toBe(false)
-      expect(result.sessionsThisWeek).toBe(0)
-      expect(result.required).toBe(2)
-      expect(store.currentWeek).toBe(1)
-    })
-
-    it('advances with enough sessions this week', () => {
-      const store = useRoutinesStore()
-      store.selectProgram('control')
-
-      const now = new Date()
-      const history = [
-        { date: now.toISOString() },
-        { date: now.toISOString() },
-      ]
-
-      const result = store.tryAdvanceWeek(history)
+      const result = store.tryAdvanceWeek()
       expect(result.advanced).toBe(true)
       expect(store.currentWeek).toBe(2)
+    })
+
+    it('does not advance past week 12', () => {
+      const store = useRoutinesStore()
+      store.selectProgram('control')
+      for (let i = 0; i < 11; i++) store.advanceWeek()
+      expect(store.currentWeek).toBe(12)
+
+      const result = store.tryAdvanceWeek()
+      expect(result.advanced).toBe(false)
+      expect(store.currentWeek).toBe(12)
+    })
+
+    it('resets the weekly session counter on advance', () => {
+      const store = useRoutinesStore()
+      store.selectProgram('control')
+      store.incrementPlanSession()
+      expect(store.planWeekSessions).toBe(1)
+
+      store.tryAdvanceWeek()
+      expect(store.planWeekSessions).toBe(0)
     })
   })
 
@@ -217,20 +221,37 @@ describe('useRoutinesStore', () => {
     })
   })
 
-  describe('weekSessionCount', () => {
-    it('counts sessions in current week', () => {
+  describe('incrementPlanSession', () => {
+    it('counts completed plan sessions for the week', () => {
       const store = useRoutinesStore()
-      const now = new Date()
-      const lastWeek = new Date(now)
-      lastWeek.setDate(now.getDate() - 8)
+      store.selectProgram('control')
 
-      const history = [
-        { date: now.toISOString() },
-        { date: now.toISOString() },
-        { date: lastWeek.toISOString() }, // should not count
-      ]
+      store.incrementPlanSession()
+      store.incrementPlanSession()
+      expect(store.planWeekSessions).toBe(2)
+      expect(store.currentWeek).toBe(1)
+    })
 
-      expect(store.weekSessionCount(history)).toBe(2)
+    it('does nothing without a selected program', () => {
+      const store = useRoutinesStore()
+
+      const result = store.incrementPlanSession()
+      expect(result.advanced).toBe(false)
+      expect(store.planWeekSessions).toBe(0)
+    })
+
+    it('auto-advances the week once the minimum is reached', () => {
+      const store = useRoutinesStore()
+      store.selectProgram('control')
+
+      let result
+      for (let i = 0; i < store.MIN_SESSIONS_TO_ADVANCE; i++) {
+        result = store.incrementPlanSession()
+      }
+
+      expect(result.advanced).toBe(true)
+      expect(store.currentWeek).toBe(2)
+      expect(store.planWeekSessions).toBe(0)
     })
   })
 })

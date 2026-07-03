@@ -21,6 +21,7 @@
     "chooseAProgram": "Choose program",
     "startSession": "Start session",
     "consistency": "Consistency",
+    "effortTrend": "Effort",
     "noStreakYet": "No streak yet",
     "daysThisWeek": "{n} day this week | {n} days this week",
     "recoveryTip": "Recovery tip",
@@ -44,14 +45,43 @@
     "noPlanBody": "Choose a training program to start your sessions.",
     "choosePlan": "Choose a plan"
   },
+  "free": {
+    "title": "Free mode",
+    "cardSubtitle": "Set your own reps and sets",
+    "description": "Define how many reps and how many sets you want of each type. We'll save your setup for next time.",
+    "sessionName": "Free session",
+    "totalReps": "Reps",
+    "blocks": "Blocks",
+    "duration": "Duration",
+    "repsPerSet": "Reps",
+    "holdDuration": "Duration",
+    "pushDuration": "Push duration",
+    "sequence": "Sequence",
+    "addBlock": "Add block",
+    "empty": "Add blocks to build your session.",
+    "blockOf": "Block {n}/{total}",
+    "start": "Start session",
+    "types": {
+      "long": "Long",
+      "short": "Short",
+      "push": "Push"
+    },
+    "hints": {
+      "long": "Slow, sustained contractions",
+      "short": "Short explosive contractions",
+      "push": "Reverse Kegel: push outward"
+    }
+  },
   "phases": {
     "contract": "Contract",
     "rest": "Relax",
     "reverse": "Push",
     "ready": "Ready",
+    "transition": "Rest",
     "contractSub": "Hold",
     "restSub": "Breathe",
-    "reverseSub": "Push out"
+    "reverseSub": "Push out",
+    "transitionSub": "Next exercise"
   },
   "summary": {
     "title": "Session Summary",
@@ -72,6 +102,13 @@
     "medium": "Medium",
     "hard": "Hard",
     "intense": "Intense"
+  },
+  "effortChart": {
+    "empty": "Rate your effort after each session to see your trend here.",
+    "neutral": "Log the effort of your sessions to get recommendations.",
+    "low": "Your effort has been low lately. Try increasing reps or adding exercises to keep progressing.",
+    "good": "Good effort level. Keep this pace and ramp up gradually.",
+    "high": "Great intensity! Make sure to rest enough between sessions."
   },
   "insights": {
     "title": "Progress",
