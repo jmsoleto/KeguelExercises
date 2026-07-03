@@ -238,6 +238,29 @@ export const useSessionStore = defineStore('session', () => {
     return days
   })
 
+  // ─── Estadísticas de progreso (dashboard de la home) ──
+  const totalSessions = computed(() => history.value.length)
+  const weekCount     = computed(() => weekActivity.value.filter(Boolean).length)
+
+  // Racha: días consecutivos con al menos una sesión, hacia atrás desde hoy
+  const streak = computed(() => {
+    let count = 0
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(today)
+      d.setDate(today.getDate() - i)
+      const hasSession = history.value.some(s => {
+        const sd = new Date(s.date)
+        sd.setHours(0, 0, 0, 0)
+        return sd.getTime() === d.getTime()
+      })
+      if (hasSession) count++
+      else if (i > 0) break
+    }
+    return count
+  })
+
   return {
     isActive, isPaused, phase, currentRep, elapsedTime, phaseTimeLeft,
     lastSession, history,
@@ -245,7 +268,7 @@ export const useSessionStore = defineStore('session', () => {
     pendingFree,
     totalReps, contractDuration, restDuration, reverseDuration,
     hasReverse, exerciseType, totalDuration, grandTotalReps, completedReps, progress,
-    weekActivity,
+    weekActivity, totalSessions, weekCount, streak,
     startSession, prepareFreeSession, consumePendingFree,
     pauseSession, resumeSession, stopSession, completeSession, setSessionEffort,
   }

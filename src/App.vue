@@ -5,18 +5,13 @@
         <component :is="Component" :key="route.fullPath" />
       </Transition>
     </RouterView>
-    <!-- BottomNav oculta en resumen y perfil (flujo transaccional / header nav) -->
-    <BottomNav v-if="showNav" />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import BottomNav from '@/components/BottomNav.vue'
 
 const route = useRoute()
-const showNav = computed(() => !['training', 'summary', 'profile', 'onboarding', 'welcome', 'program-detail', 'free'].includes(route.name))
 </script>
 
 <style>

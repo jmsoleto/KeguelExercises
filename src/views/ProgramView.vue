@@ -1,8 +1,11 @@
 <template>
-  <div class="min-h-dvh bg-background pb-28">
+  <div class="min-h-dvh bg-background pb-12">
 
     <!-- TopBar -->
-    <header class="flex items-center px-6 py-4 pt-safe sticky top-0 z-40 bg-background bg-glass">
+    <header class="flex items-center gap-3 px-4 py-4 pt-safe sticky top-0 z-40 bg-background bg-glass">
+      <button @click="goBack" aria-label="Volver" class="text-primary p-2 rounded-xl active:scale-95 transition-transform">
+        <span class="material-symbols-outlined">arrow_back</span>
+      </button>
       <h1 class="font-headline font-bold text-xl text-primary">{{ $t('program.title') }}</h1>
     </header>
 
@@ -78,13 +81,21 @@
 <script setup>
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
 import { useRoutinesStore, PROGRAMS } from '@/stores/routines'
 import { useProfileStore } from '@/stores/profile'
 import ComingSoon from '@/components/ComingSoon.vue'
 
+const router   = useRouter()
 const routines = useRoutinesStore()
 const profile  = useProfileStore()
 const { selectedProgramId } = storeToRefs(routines)
+
+// Volver: a la pantalla anterior si la hay; si se entró directo, a la home
+function goBack() {
+  if (window.history.state?.back) router.back()
+  else router.push('/training')
+}
 
 const isFemale = computed(() => profile.sex === 'female')
 // Solo se muestran los programas del sexo del usuario (hoy solo existen masculinos)

@@ -164,6 +164,24 @@
             </div>
           </RouterLink>
 
+          <!-- ═══ PROGRESO (dashboard fusionado) ═══ -->
+
+          <!-- Estadísticas globales -->
+          <section class="grid grid-cols-3 gap-3">
+            <div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm">
+              <p class="text-[10px] font-label uppercase tracking-widest text-outline mb-2">{{ $t('insights.totalSessions') }}</p>
+              <p class="text-3xl font-headline font-bold text-primary">{{ session.totalSessions }}</p>
+            </div>
+            <div class="bg-surface-container-low rounded-xl p-4">
+              <p class="text-[10px] font-label uppercase tracking-widest text-outline mb-2">{{ $t('insights.thisWeek') }}</p>
+              <p class="text-3xl font-headline font-bold text-primary">{{ session.weekCount }}</p>
+            </div>
+            <div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm">
+              <p class="text-[10px] font-label uppercase tracking-widest text-outline mb-2">{{ $t('insights.currentStreak') }}</p>
+              <p class="text-3xl font-headline font-bold text-primary">{{ session.streak }}<span class="text-base text-outline">d</span></p>
+            </div>
+          </section>
+
           <!-- Consistencia semanal -->
           <section class="space-y-4">
             <div class="flex justify-between items-end px-2">
@@ -179,6 +197,54 @@
               <h3 class="font-headline font-bold text-xl text-primary">{{ $t('training.effortTrend') }}</h3>
             </div>
             <EffortChart />
+          </section>
+
+          <!-- Historial de sesiones -->
+          <section class="space-y-4">
+            <h3 class="font-headline font-bold text-xl text-primary px-2">{{ $t('insights.history') }}</h3>
+
+            <div v-if="!history.length" class="text-center py-12 text-on-surface-variant">
+              <span class="material-symbols-outlined text-5xl mb-3 block text-outline-variant">history</span>
+              <p class="font-body">{{ $t('insights.noSessions') }}</p>
+              <p class="text-sm mt-1">{{ $t('insights.noSessionsTip') }}</p>
+            </div>
+
+            <template v-else>
+              <div class="space-y-3">
+                <div
+                  v-for="s in visibleHistory"
+                  :key="s.id"
+                  class="bg-surface-container-lowest rounded-xl p-5 flex items-center gap-4 shadow-sm"
+                >
+                  <div class="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-on-tertiary-fixed text-sm" style="font-variation-settings: 'FILL' 1">check</span>
+                  </div>
+                  <div class="flex-grow">
+                    <p class="font-headline font-bold text-on-surface text-sm">{{ s.routine }}</p>
+                    <p class="text-xs text-on-surface-variant mt-0.5">{{ formatDate(s.date) }}</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-headline font-bold text-primary text-sm">{{ s.reps }}/{{ s.totalReps }}</p>
+                    <p class="text-xs text-outline">{{ Math.ceil(s.duration / 60) }} {{ $t('summary.min') }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Ver todo / Ver menos (in-situ, sin navegar) -->
+              <button
+                v-if="history.length > HISTORY_PREVIEW"
+                @click="showAllHistory = !showAllHistory"
+                class="w-full flex items-center justify-center gap-1.5 py-3 rounded-xl
+                       bg-surface-container text-on-surface-variant text-sm font-label
+                       active:scale-[0.98] transition-transform"
+              >
+                {{ showAllHistory ? $t('insights.showLess') : $t('insights.showAll') }}
+                <span
+                  class="material-symbols-outlined text-base transition-transform duration-200"
+                  :class="showAllHistory ? 'rotate-180' : ''"
+                >expand_more</span>
+              </button>
+            </template>
           </section>
 
           <!-- Tip del día -->
@@ -401,7 +467,7 @@ import EffortChart from '@/components/EffortChart.vue'
 import ComingSoon from '@/components/ComingSoon.vue'
 
 const router   = useRouter()
-const { t }    = useI18n()
+const { t, locale } = useI18n()
 const session  = useSessionStore()
 const routines = useRoutinesStore()
 const profile  = useProfileStore()
@@ -413,6 +479,21 @@ const privacyMode     = ref(false)
 const showCountdown   = ref(false)
 const countdownValue  = ref(5)
 const countdownKey    = ref(0)
+
+// ─── Historial (dashboard de progreso en la home) ───
+const HISTORY_PREVIEW = 5
+const showAllHistory  = ref(false)
+const history         = computed(() => session.history)
+const visibleHistory  = computed(() =>
+  showAllHistory.value ? history.value : history.value.slice(0, HISTORY_PREVIEW)
+)
+
+function formatDate(iso) {
+  const loc = locale.value === 'en' ? 'en-US' : 'es-ES'
+  return new Date(iso).toLocaleDateString(loc, {
+    weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+  })
+}
 
 // storeToRefs garantiza reactividad entre vistas
 const { selectedProgram: activeProgram, currentWeek, activePhase, planWeekSessions } = storeToRefs(routines)

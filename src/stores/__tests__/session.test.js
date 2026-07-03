@@ -257,4 +257,59 @@ describe('useSessionStore', () => {
       expect(store.weekActivity.every(v => v === false)).toBe(true)
     })
   })
+
+  describe('progress stats', () => {
+    it('totalSessions reflects history length', () => {
+      const store = useSessionStore()
+      expect(store.totalSessions).toBe(0)
+      store.history.push({ id: 1, date: new Date().toISOString(), reps: 10, totalReps: 10 })
+      store.history.push({ id: 2, date: new Date().toISOString(), reps: 10, totalReps: 10 })
+      expect(store.totalSessions).toBe(2)
+    })
+
+    it('weekCount counts distinct active days this week', () => {
+      const store = useSessionStore()
+      expect(store.weekCount).toBe(0)
+      // Dos sesiones el mismo día cuentan como un único día activo
+      store.history.push({ id: 1, date: new Date().toISOString(), reps: 10, totalReps: 10 })
+      store.history.push({ id: 2, date: new Date().toISOString(), reps: 10, totalReps: 10 })
+      expect(store.weekCount).toBe(1)
+    })
+
+    it('streak counts consecutive days ending today', () => {
+      const store = useSessionStore()
+      expect(store.streak).toBe(0)
+
+      const today = new Date()
+      const yesterday = new Date()
+      yesterday.setDate(today.getDate() - 1)
+      const threeDaysAgo = new Date()
+      threeDaysAgo.setDate(today.getDate() - 3)
+
+      // Hoy + ayer = racha de 2; el hueco de hace 3 días no cuenta
+      store.history.push({ id: 1, date: today.toISOString(), reps: 10, totalReps: 10 })
+      store.history.push({ id: 2, date: yesterday.toISOString(), reps: 10, totalReps: 10 })
+      store.history.push({ id: 3, date: threeDaysAgo.toISOString(), reps: 10, totalReps: 10 })
+
+      expect(store.streak).toBe(2)
+    })
+
+    it('today counts as grace: yesterday-only still yields a streak', () => {
+      // El día en curso no rompe la racha aunque no haya sesión todavía;
+      // sólo un hueco en un día anterior la corta.
+      const store = useSessionStore()
+      const yesterday = new Date()
+      yesterday.setDate(yesterday.getDate() - 1)
+      store.history.push({ id: 1, date: yesterday.toISOString(), reps: 10, totalReps: 10 })
+      expect(store.streak).toBe(1)
+    })
+
+    it('streak is 0 when the last session is older than yesterday', () => {
+      const store = useSessionStore()
+      const threeDaysAgo = new Date()
+      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
+      store.history.push({ id: 1, date: threeDaysAgo.toISOString(), reps: 10, totalReps: 10 })
+      expect(store.streak).toBe(0)
+    })
+  })
 })

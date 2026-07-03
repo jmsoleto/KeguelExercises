@@ -3,11 +3,6 @@
     "name": "PelvicForce",
     "version": "v0.1.0"
   },
-  "nav": {
-    "today": "Hoy",
-    "progress": "Progreso",
-    "plans": "Planes"
-  },
   "training": {
     "noProgram": "Sin programa",
     "chooseProgram": "Elige un programa.",
@@ -110,7 +105,9 @@
     "weekTitle": "Esta semana",
     "history": "Historial",
     "noSessions": "Aún no hay sesiones registradas.",
-    "noSessionsTip": "¡Completa tu primera sesión para verla aquí!"
+    "noSessionsTip": "¡Completa tu primera sesión para verla aquí!",
+    "showAll": "Ver todo",
+    "showLess": "Ver menos"
   },
   "program": {
     "title": "Programas",
