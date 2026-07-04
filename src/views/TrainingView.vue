@@ -5,140 +5,126 @@
          ESTADO 1: DASHBOARD "TODAY"
     ════════════════════════════════════════ -->
     <Transition name="slide-up">
-      <div v-if="!sessionStarted" class="pb-12">
+      <div v-if="!sessionStarted" class="pb-16">
+
+        <!-- ── Escala de forma (documentada, aplicada en toda la home):
+             · Paneles grandes .......... rounded-3xl (24px)
+             · Tiles / superficies ...... rounded-2xl (16px)
+             · Botones / chips / pills .. rounded-full
+             Acento único: primary (teal). ── -->
 
         <!-- TopAppBar -->
         <header class="fixed top-0 w-full z-50 bg-[#f4faff]/80 dark:bg-[#111d23]/80 bg-glass-light bg-glass">
           <div class="flex justify-between items-center px-6 h-16 w-full max-w-lg mx-auto">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden">
-                <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings: 'FILL' 1">person</span>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-primary font-headline font-extrabold tracking-tighter text-xl leading-tight">PelvicForce</span>
-                <span class="text-on-surface-variant font-label text-[10px] tracking-wide">{{ $t('training.hello', { name: profile.name }) }}</span>
-              </div>
-            </div>
-            <RouterLink to="/profile" aria-label="Ajustes">
-              <button class="text-primary p-2 hover:bg-surface-container-high transition-colors active:scale-95 duration-200 rounded-xl" aria-label="Abrir ajustes">
-                <span class="material-symbols-outlined" aria-hidden="true">settings</span>
+            <span class="text-primary font-headline font-extrabold tracking-tighter text-lg leading-none">PelvicForce</span>
+            <RouterLink to="/profile" aria-label="Abrir ajustes">
+              <button class="flex items-center justify-center w-10 h-10 rounded-full text-primary hover:bg-surface-container-high active:scale-95 transition-all duration-200" aria-label="Abrir ajustes">
+                <span class="material-symbols-outlined text-[22px]" aria-hidden="true">settings</span>
               </button>
             </RouterLink>
           </div>
         </header>
 
-        <main class="pt-24 px-6 max-w-lg mx-auto space-y-10">
+        <main class="pt-24 px-6 max-w-lg mx-auto">
 
           <ComingSoon v-if="isFemale" />
 
           <template v-else>
-          <!-- Hero editorial -->
-          <section class="flex flex-col gap-1">
-            <span class="text-secondary font-label text-xs uppercase tracking-widest font-semibold">
-              {{ hasProgram ? activeProgram.name : $t('training.noProgram') }}
-            </span>
-            <h1 class="font-headline font-extrabold text-4xl text-primary tracking-tight leading-tight">
+
+          <!-- ── SALUDO ── -->
+          <section class="anim-reveal flex flex-col gap-1.5 mb-8" style="--i: 0">
+            <p class="text-on-surface-variant font-body text-base">{{ $t('training.hello', { name: profile.name }) }}</p>
+            <h1 class="font-headline font-extrabold text-[2.6rem] text-primary tracking-tight leading-[1.05]">
               {{ hasProgram ? activePhase?.name ?? $t('training.readyToTrain') : $t('training.chooseProgram') }}
             </h1>
           </section>
 
-          <!-- Tarjeta principal bento -->
-          <section class="relative group">
-            <div class="absolute inset-0 bg-primary opacity-[0.03] rounded-3xl -rotate-1 scale-[1.02] transition-transform group-hover:rotate-0" />
-            <div class="relative bg-surface-container-lowest rounded-3xl p-8 shadow-[0_32px_32px_-4px_rgba(17,29,35,0.06)] space-y-8">
+          <!-- ── TARJETA "HOY": arranque de la sesión ── -->
+          <section class="anim-reveal mb-10" style="--i: 1">
+            <div class="bg-surface-container-lowest rounded-3xl shadow-[0_24px_48px_-16px_rgba(17,29,35,0.10)] overflow-hidden">
 
               <!-- ── CON PLAN ACTIVO ── -->
               <template v-if="hasProgram">
 
-                <!-- Header tarjeta -->
-                <div class="flex justify-between items-start">
-                  <div class="space-y-1">
-                    <h2 class="font-headline font-bold text-2xl text-primary">{{ activeProgram.name }}</h2>
-                    <p class="text-on-surface-variant text-sm">{{ activePhase?.name }}</p>
+                <!-- Preview de sesión: orbe que respira (previsualiza la experiencia del timer) -->
+                <div class="relative px-7 pt-7 pb-6">
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="min-w-0">
+                      <h2 class="font-headline font-bold text-xl text-primary truncate">{{ activeProgram.name }}</h2>
+                      <p class="text-on-surface-variant text-sm mt-0.5">{{ routineLevel }}</p>
+                    </div>
                   </div>
-                  <div class="bg-tertiary-fixed-dim/20 text-tertiary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                    {{ routineLevel }}
+
+                  <!-- Orbe -->
+                  <div class="relative flex items-center justify-center py-7">
+                    <div class="preview-orb-glow absolute w-40 h-40 rounded-full bg-primary/10 blur-2xl" aria-hidden="true" />
+                    <div class="preview-orb relative w-36 h-36 rounded-full flex flex-col items-center justify-center bg-gradient-to-br from-primary-container/25 to-tertiary-fixed/20 border border-primary/10">
+                      <span class="font-headline font-black text-5xl text-primary tabular-nums leading-none">{{ totalMinutes }}</span>
+                      <span class="font-label text-[11px] font-bold tracking-[0.2em] text-primary/60 mt-1">{{ $t('training.min') }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Métricas de la sesión — sin tarjetas anidadas, separadas por línea fina -->
+                  <div class="flex items-center divide-x divide-outline-variant/40 rounded-2xl bg-surface-container-low">
+                    <div class="flex-1 flex flex-col items-center gap-1.5 py-3.5">
+                      <span class="text-[11px] text-on-surface-variant">{{ $t('training.reps') }}</span>
+                      <span class="text-sm font-headline font-bold text-primary tabular-nums">{{ routine.reps }} × {{ routine.contractSeconds }}s</span>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center gap-1.5 py-3.5">
+                      <span class="text-[11px] text-on-surface-variant">{{ $t('training.intensity') }}</span>
+                      <div class="flex gap-1">
+                        <span
+                          v-for="i in 3" :key="i"
+                          class="h-1.5 w-5 rounded-full transition-colors"
+                          :class="i <= intensityLevel ? 'bg-primary' : 'bg-outline-variant/30'"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 <!-- Tip de la fase -->
-                <div v-if="activePhase?.tip" class="bg-tertiary/5 rounded-xl p-4 border-l-2 border-tertiary flex gap-3">
-                  <span class="material-symbols-outlined text-tertiary text-base flex-shrink-0">tips_and_updates</span>
-                  <p class="text-xs leading-relaxed text-on-surface-variant">{{ activePhase.tip }}</p>
+                <div v-if="activePhase?.tip" class="mx-7 mb-6 flex gap-3 rounded-2xl bg-tertiary/[0.06] p-4">
+                  <span class="material-symbols-outlined text-tertiary text-[20px] flex-shrink-0" style="font-variation-settings: 'FILL' 1">tips_and_updates</span>
+                  <p class="text-[13px] leading-relaxed text-on-surface-variant">{{ activePhase.tip }}</p>
                 </div>
 
-                <!-- Visual -->
-                <div class="w-full aspect-[16/10] bg-surface-container-low rounded-2xl flex items-center justify-center overflow-hidden relative">
-                  <div class="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent" />
-                  <div class="flex flex-col items-center gap-3 text-primary/30">
-                    <span class="material-symbols-outlined text-7xl">self_improvement</span>
-                  </div>
-                  <div class="absolute bottom-4 right-4">
-                    <div class="bg-surface/80 bg-glass px-3 py-1.5 rounded-xl flex items-center gap-2">
-                      <span class="material-symbols-outlined text-sm text-primary">timer</span>
-                      <span class="text-xs font-bold text-primary">{{ totalMinutes }} {{ $t('training.min') }}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Stats grid -->
-                <div class="grid grid-cols-2 gap-4">
-                  <div class="bg-surface-container-high rounded-2xl p-4 flex flex-col gap-1">
-                    <span class="text-[10px] text-on-secondary-container uppercase tracking-wider font-semibold">{{ $t('training.intensity') }}</span>
-                    <div class="flex gap-1 mt-1">
-                      <div
-                        v-for="i in 3" :key="i"
-                        class="h-1.5 w-6 rounded-full"
-                        :class="i <= intensityLevel ? 'bg-primary' : 'bg-outline-variant/30'"
-                      />
-                    </div>
-                  </div>
-                  <div class="bg-surface-container-high rounded-2xl p-4 flex flex-col gap-1">
-                    <span class="text-[10px] text-on-secondary-container uppercase tracking-wider font-semibold">{{ $t('training.reps') }}</span>
-                    <span class="text-lg font-headline font-bold text-primary">
-                      {{ routine.reps }} × {{ routine.contractSeconds }}s
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Ver programa -->
-                <RouterLink to="/program">
-                  <button class="w-full flex items-center justify-between px-4 py-3 rounded-xl
-                                 bg-surface-container text-on-surface-variant text-sm font-label
-                                 active:scale-[0.98] transition-transform mb-1">
-                    <span class="flex items-center gap-2">
-                      <span class="material-symbols-outlined text-base">route</span>
-                      {{ $t('training.viewFullProgram') }}
-                    </span>
-                    <span class="material-symbols-outlined text-base">chevron_right</span>
+                <!-- Acciones -->
+                <div class="px-7 pb-7 space-y-3">
+                  <button
+                    @click="startSession"
+                    class="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-primary to-primary-container text-white
+                           py-[18px] rounded-full font-headline font-bold text-lg shadow-lg shadow-primary/20
+                           active:scale-[0.98] transition-all"
+                  >
+                    <span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1">play_arrow</span>
+                    {{ $t('training.startSession') }}
                   </button>
-                </RouterLink>
-
-                <!-- CTA: comenzar -->
-                <button
-                  @click="startSession"
-                  class="w-full bg-gradient-to-br from-primary to-primary-container text-white
-                         py-5 rounded-xl font-headline font-bold text-lg shadow-lg
-                         active:scale-[0.98] transition-all hover:shadow-primary/20"
-                >
-                  {{ $t('training.startSession') }}
-                </button>
+                  <RouterLink to="/program" class="block">
+                    <button class="w-full flex items-center justify-center gap-1.5 py-3 rounded-full
+                                   text-on-surface-variant text-sm font-label hover:bg-surface-container-low
+                                   active:scale-[0.98] transition-all">
+                      {{ $t('training.viewFullProgram') }}
+                      <span class="material-symbols-outlined text-base">chevron_right</span>
+                    </button>
+                  </RouterLink>
+                </div>
 
               </template>
 
               <!-- ── SIN PLAN ACTIVO ── -->
               <template v-else>
-                <div class="flex flex-col items-center gap-6 py-6 text-center">
-                  <div class="w-20 h-20 rounded-full bg-surface-container-high flex items-center justify-center">
-                    <span class="material-symbols-outlined text-4xl text-on-surface-variant/40">fitness_center</span>
+                <div class="flex flex-col items-center gap-6 p-8 py-10 text-center">
+                  <div class="w-20 h-20 rounded-full bg-primary-container/20 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-4xl text-primary/40">self_improvement</span>
                   </div>
                   <div class="space-y-2">
                     <h2 class="font-headline font-bold text-xl text-primary">{{ $t('training.noPlanTitle') }}</h2>
-                    <p class="text-sm text-on-surface-variant leading-relaxed">{{ $t('training.noPlanBody') }}</p>
+                    <p class="text-sm text-on-surface-variant leading-relaxed max-w-xs">{{ $t('training.noPlanBody') }}</p>
                   </div>
                   <RouterLink to="/program" class="w-full">
                     <button class="w-full bg-gradient-to-br from-primary to-primary-container text-white
-                                   py-5 rounded-xl font-headline font-bold text-lg shadow-lg
+                                   py-[18px] rounded-full font-headline font-bold text-lg shadow-lg shadow-primary/20
                                    active:scale-[0.98] transition-all">
                       {{ $t('training.choosePlan') }}
                     </button>
@@ -149,82 +135,83 @@
             </div>
           </section>
 
-          <!-- Modo libre -->
-          <RouterLink to="/free" class="block">
-            <div class="relative bg-surface-container-lowest rounded-3xl p-5 shadow-sm
-                        active:scale-[0.98] transition-transform flex items-center gap-4">
-              <div class="w-12 h-12 rounded-2xl bg-secondary-container text-on-secondary-container flex items-center justify-center flex-shrink-0">
+          <!-- ── MODO LIBRE — franja tintada, distinta del resto.
+               Tokens exactos (sin opacidad) para que apliquen los overrides de dark de main.css ── -->
+          <RouterLink to="/free" class="anim-reveal block mb-12" style="--i: 2">
+            <div class="flex items-center gap-4 rounded-3xl bg-secondary-container p-5
+                        active:scale-[0.98] transition-transform">
+              <div class="w-12 h-12 rounded-full bg-surface-container-lowest text-primary flex items-center justify-center flex-shrink-0">
                 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">tune</span>
               </div>
               <div class="flex-1 min-w-0">
-                <h3 class="font-headline font-bold text-base text-primary">{{ $t('free.title') }}</h3>
-                <p class="text-xs text-on-surface-variant leading-snug">{{ $t('free.cardSubtitle') }}</p>
+                <h3 class="font-headline font-bold text-base text-on-surface">{{ $t('free.title') }}</h3>
+                <p class="text-[13px] text-on-surface-variant leading-snug">{{ $t('free.cardSubtitle') }}</p>
               </div>
               <span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
             </div>
           </RouterLink>
 
-          <!-- ═══ PROGRESO (dashboard fusionado) ═══ -->
+          <!-- ═══ PROGRESO ═══ -->
 
-          <!-- Estadísticas globales -->
-          <section class="grid grid-cols-3 gap-3">
-            <div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm">
-              <p class="text-[10px] font-label uppercase tracking-widest text-outline mb-2">{{ $t('insights.totalSessions') }}</p>
-              <p class="text-3xl font-headline font-bold text-primary">{{ session.totalSessions }}</p>
+          <!-- Estadísticas globales — números que respiran, sin caja -->
+          <section class="anim-reveal grid grid-cols-3 mb-12 rounded-3xl bg-surface-container-lowest shadow-sm divide-x divide-outline-variant/40" style="--i: 3">
+            <div class="flex flex-col items-center py-6 px-2 text-center">
+              <p class="text-4xl font-headline font-bold text-primary tabular-nums leading-none">{{ session.totalSessions }}</p>
+              <p class="text-[11px] font-label text-outline mt-2">{{ $t('insights.totalSessions') }}</p>
             </div>
-            <div class="bg-surface-container-low rounded-xl p-4">
-              <p class="text-[10px] font-label uppercase tracking-widest text-outline mb-2">{{ $t('insights.thisWeek') }}</p>
-              <p class="text-3xl font-headline font-bold text-primary">{{ session.weekCount }}</p>
+            <div class="flex flex-col items-center py-6 px-2 text-center">
+              <p class="text-4xl font-headline font-bold text-primary tabular-nums leading-none">{{ session.weekCount }}</p>
+              <p class="text-[11px] font-label text-outline mt-2">{{ $t('insights.thisWeek') }}</p>
             </div>
-            <div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm">
-              <p class="text-[10px] font-label uppercase tracking-widest text-outline mb-2">{{ $t('insights.currentStreak') }}</p>
-              <p class="text-3xl font-headline font-bold text-primary">{{ session.streak }}<span class="text-base text-outline">d</span></p>
+            <div class="flex flex-col items-center py-6 px-2 text-center">
+              <p class="text-4xl font-headline font-bold text-primary tabular-nums leading-none">{{ session.streak }}<span class="text-lg text-outline">d</span></p>
+              <p class="text-[11px] font-label text-outline mt-2">{{ $t('insights.currentStreak') }}</p>
             </div>
           </section>
 
           <!-- Consistencia semanal -->
-          <section class="space-y-4">
-            <div class="flex justify-between items-end px-2">
+          <section class="anim-reveal space-y-4 mb-12" style="--i: 4">
+            <div class="flex justify-between items-baseline">
               <h3 class="font-headline font-bold text-xl text-primary">{{ $t('training.consistency') }}</h3>
-              <span class="text-xs text-on-surface-variant">{{ streakText }}</span>
+              <span class="text-[13px] text-on-surface-variant">{{ streakText }}</span>
             </div>
             <WeeklyChart />
           </section>
 
           <!-- Esfuerzo en el tiempo -->
-          <section class="space-y-4">
-            <div class="flex justify-between items-end px-2">
-              <h3 class="font-headline font-bold text-xl text-primary">{{ $t('training.effortTrend') }}</h3>
-            </div>
+          <section class="anim-reveal space-y-4 mb-12" style="--i: 5">
+            <h3 class="font-headline font-bold text-xl text-primary">{{ $t('training.effortTrend') }}</h3>
             <EffortChart />
           </section>
 
           <!-- Historial de sesiones -->
-          <section class="space-y-4">
-            <h3 class="font-headline font-bold text-xl text-primary px-2">{{ $t('insights.history') }}</h3>
+          <section class="anim-reveal space-y-3 mb-12" style="--i: 6">
+            <h3 class="font-headline font-bold text-xl text-primary mb-1">{{ $t('insights.history') }}</h3>
 
-            <div v-if="!history.length" class="text-center py-12 text-on-surface-variant">
+            <!-- Empty state -->
+            <div v-if="!history.length" class="text-center py-12 rounded-3xl bg-surface-container-lowest shadow-sm text-on-surface-variant">
               <span class="material-symbols-outlined text-5xl mb-3 block text-outline-variant">history</span>
               <p class="font-body">{{ $t('insights.noSessions') }}</p>
               <p class="text-sm mt-1">{{ $t('insights.noSessionsTip') }}</p>
             </div>
 
+            <!-- Historial: filas agrupadas con separador fino (un solo divisor entre filas) -->
             <template v-else>
-              <div class="space-y-3">
+              <div class="rounded-3xl bg-surface-container-lowest shadow-sm divide-y divide-outline-variant/40 overflow-hidden">
                 <div
                   v-for="s in visibleHistory"
                   :key="s.id"
-                  class="bg-surface-container-lowest rounded-xl p-5 flex items-center gap-4 shadow-sm"
+                  class="flex items-center gap-4 p-5"
                 >
                   <div class="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center flex-shrink-0">
-                    <span class="material-symbols-outlined text-on-tertiary-fixed text-sm" style="font-variation-settings: 'FILL' 1">check</span>
+                    <span class="material-symbols-outlined text-on-tertiary-fixed text-[18px]" style="font-variation-settings: 'FILL' 1">check</span>
                   </div>
-                  <div class="flex-grow">
-                    <p class="font-headline font-bold text-on-surface text-sm">{{ s.routine }}</p>
+                  <div class="flex-grow min-w-0">
+                    <p class="font-headline font-bold text-on-surface text-sm truncate">{{ s.routine }}</p>
                     <p class="text-xs text-on-surface-variant mt-0.5">{{ formatDate(s.date) }}</p>
                   </div>
-                  <div class="text-right">
-                    <p class="font-headline font-bold text-primary text-sm">{{ s.reps }}/{{ s.totalReps }}</p>
+                  <div class="text-right flex-shrink-0">
+                    <p class="font-headline font-bold text-primary text-sm tabular-nums">{{ s.reps }}/{{ s.totalReps }}</p>
                     <p class="text-xs text-outline">{{ Math.ceil(s.duration / 60) }} {{ $t('summary.min') }}</p>
                   </div>
                 </div>
@@ -234,9 +221,9 @@
               <button
                 v-if="history.length > HISTORY_PREVIEW"
                 @click="showAllHistory = !showAllHistory"
-                class="w-full flex items-center justify-center gap-1.5 py-3 rounded-xl
-                       bg-surface-container text-on-surface-variant text-sm font-label
-                       active:scale-[0.98] transition-transform"
+                class="w-full flex items-center justify-center gap-1.5 py-3 rounded-full
+                       text-on-surface-variant text-sm font-label hover:bg-surface-container-low
+                       active:scale-[0.98] transition-all"
               >
                 {{ showAllHistory ? $t('insights.showLess') : $t('insights.showAll') }}
                 <span
@@ -247,13 +234,13 @@
             </template>
           </section>
 
-          <!-- Tip del día -->
-          <section class="bg-tertiary/5 rounded-3xl p-6 border-l-4 border-tertiary">
+          <!-- Consejo de recuperación — nota de cierre calmada -->
+          <section class="anim-reveal rounded-3xl bg-tertiary/[0.06] p-6" style="--i: 7">
             <div class="flex gap-4 items-start">
-              <span class="material-symbols-outlined text-tertiary">spa</span>
+              <span class="material-symbols-outlined text-tertiary flex-shrink-0" style="font-variation-settings: 'FILL' 1">spa</span>
               <div class="space-y-1">
                 <h4 class="font-headline font-bold text-sm text-tertiary">{{ $t('training.recoveryTip') }}</h4>
-                <p class="text-xs leading-relaxed text-on-surface-variant">
+                <p class="text-[13px] leading-relaxed text-on-surface-variant">
                   {{ $t('training.recoveryTipText') }}
                 </p>
               </div>
@@ -722,6 +709,33 @@ watch(() => session.isActive, (active, wasActive) => {
 }
 .slide-up-enter-from { opacity: 0; transform: translateY(20px); }
 .slide-up-leave-to   { opacity: 0; transform: translateY(-10px); }
+
+/* ── Entrada escalonada del dashboard (bienvenida): jerarquía de arriba a abajo ── */
+@media (prefers-reduced-motion: no-preference) {
+  .anim-reveal {
+    opacity: 0;
+    animation: dash-reveal 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: calc(var(--i, 0) * 65ms);
+  }
+}
+@keyframes dash-reveal {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── Orbe de previsualización: respira como el timer real (misma metáfora) ── */
+@media (prefers-reduced-motion: no-preference) {
+  .preview-orb      { animation: orb-breath 5.5s ease-in-out infinite; }
+  .preview-orb-glow { animation: orb-glow  5.5s ease-in-out infinite; }
+}
+@keyframes orb-breath {
+  0%, 100% { transform: scale(1);    }
+  50%      { transform: scale(1.045); }
+}
+@keyframes orb-glow {
+  0%, 100% { opacity: 0.5; transform: scale(1);    }
+  50%      { opacity: 0.9; transform: scale(1.12); }
+}
 
 /* ── Aura: respiración lenta ── */
 @keyframes aura-breath {
